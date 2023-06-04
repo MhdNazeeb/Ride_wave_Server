@@ -40,7 +40,7 @@ const login = async (req, res) => {
     const isPasswordCorrect = await bcrypt.compare(password, findUser.password);
     console.log(isPasswordCorrect, "password");
     if (!isPasswordCorrect) {
-      res.json({ status: "password not Found" });
+     return res.json({ status: "incorrect password" });
     }
     console.log(findUser, "find user ");
     if (findUser.status === true && isPasswordCorrect) {
@@ -50,10 +50,10 @@ const login = async (req, res) => {
         { expiresIn: "5h" }
       );
       if (!findUser.isverify) {
-        console.log('kkkkkkkkkkk');
-         sendEmail(findUser,res);
-        
+        sendEmail(findUser, res);
+        return ;
       }
+      res.status(200).json({token:toke,user:findUser,status:'Login success'})
     }
   } catch (error) {
     console.log(error.message, "message");
@@ -83,12 +83,11 @@ const sendEmail = async (finduser, res) => {
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.log("errrrrrrr");
-      res.status(404).json({status:error.message})
+      console.log('error');
+      res.status(404).json({ status: error.message });
     } else {
-      console.log("sssssssss");
-      res.status(200).json({status:`verification link has been send to ${info.accepted[0]}`})
-     
+      console.log('email send  suuccessfulllly');
+      res.status(200).json({  message:'not verified', status: `verification link has been send to ${info.accepted[0]}`, });
     }
   });
 };
@@ -96,7 +95,7 @@ const sendEmail = async (finduser, res) => {
 const verifyLink = async (req, res) => {
   try {
     const { userid } = req.query;
-    console.log(userid)
+    console.log(userid);
     const isverifyuser = await user.findByIdAndUpdate(
       { _id: userid },
       { $set: { isverify: true } },
@@ -107,10 +106,9 @@ const verifyLink = async (req, res) => {
       "ClientTokenSecret",
       { expiresIn: "5h" }
     );
-    res.status(200).json({token:toke})
-    
+    res.status(200).json({ token: toke ,user:isverifyuser ,status:'Account has been verified successfully'});
   } catch (error) {
-console.log(error.message);
+    console.log(error.message);
   }
 };
 
