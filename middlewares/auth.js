@@ -52,7 +52,7 @@ const verifyTokenClient = async (req, res, next) => {
   }
 };
 
-const verifyTokenTrainer = async (req, res, next) => {
+const verifyTokenDriver = async (req, res, next) => {
   try {
     let token = req.headers["authorization"];
     console.log(token,'trainer token')
@@ -77,4 +77,4 @@ const verifyTokenTrainer = async (req, res, next) => {
   }
 };
 
-module.exports = { verifyTokenAdmin, verifyTokenClient, verifyTokenTrainer };
+module.exports = { verifyTokenAdmin, verifyTokenClient, verifyTokenDriver };

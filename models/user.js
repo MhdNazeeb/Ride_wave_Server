@@ -27,6 +27,9 @@ const addressSchema = new mongoose.Schema({
       type: Boolean,
       default:true
     },
+   license:{
+    type:String
+   },
   isverify:{
     type: Boolean,
     default:false
@@ -34,6 +37,14 @@ const addressSchema = new mongoose.Schema({
   EmailToken:{
     type: String,
     
+  },
+  isAdmin:{
+    type:Boolean,
+    default:false
+  },
+  isDriver:{
+    type:Boolean,
+    default:false,
   },
 updated:{ type: Date, default: moment(Date.now()).format("DD MMM YYYY")},
 created:{ type: Date, default: moment(Date.now()).format("DD MMM YYYY")}

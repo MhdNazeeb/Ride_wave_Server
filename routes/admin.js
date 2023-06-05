@@ -1,9 +1,7 @@
 var express = require('express');
 var router = express.Router();
-
+const {login}=require('../controller/admin/admin')
 /* GET users listing. */
-router.get('/', function(req, res, next) {
- console.log('hiii')
-});
+router.post('/login',login);
 
 module.exports = router;
