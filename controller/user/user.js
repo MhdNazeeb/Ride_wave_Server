@@ -112,8 +112,10 @@ const verifyLink = async (req, res) => {
   }
 };
 
+
 module.exports = {
   signup,
   login,
   verifyLink,
+
 };

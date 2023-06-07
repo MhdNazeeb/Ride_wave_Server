@@ -46,6 +46,11 @@ const addressSchema = new mongoose.Schema({
     type:Boolean,
     default:false,
   },
+  DriverStatus:{
+    type:Boolean,
+    default:false,
+  },
+
 updated:{ type: Date, default: moment(Date.now()).format("DD MMM YYYY")},
 created:{ type: Date, default: moment(Date.now()).format("DD MMM YYYY")}
 })

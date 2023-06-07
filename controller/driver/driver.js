@@ -51,7 +51,7 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const findDriver = await user.findOne({ email: email });
+    const findDriver = await user.findOne({ email: email ,isDriver:true });
     if (!findDriver) return res.json({ status: "User doesn't exist" });
     const isPasswordCorrect = await bcrypt.compare(password, findDriver.password);
     console.log(isPasswordCorrect, "password");
@@ -59,13 +59,20 @@ const login = async (req, res) => {
       return res.json({ status: "incorrect password" });
     }
     console.log(findDriver, "find driver ");
-    if (findDriver.status === true && isPasswordCorrect) {
-      const toke = jwt.sign(
-        { id: findDriver._id, role: "driver" },
-        "ClientTokenSecret",
-        { expiresIn: "5h" }
-      );
-      res.status(200).json({ token: toke, driver: findDriver, status: "Login success" });
+    if (findDriver.isverify === true && isPasswordCorrect) {
+      if (findDriver.DriverStatus) {
+        const toke = jwt.sign(
+          { id: findDriver._id, role: "driver" },
+          "ClientTokenSecret",
+          { expiresIn: "5h" }
+        );
+        res.status(200).json({ token: toke, driver: findDriver, status: "Login success" });
+      }else{
+        res.status(200).json({status:'this id is blocked'});
+      }
+      
+      }else{
+      res.status(200).json({status:'it may take 24 houres to verify driver'})
       }
     }catch (error){
     console.log(error.message);
