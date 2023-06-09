@@ -50,6 +50,14 @@ const addressSchema = new mongoose.Schema({
     type:Boolean,
     default:false,
   },
+  isUser:{
+    type:Boolean,
+    default:false,
+  },
+  userVerify:{
+    type:Boolean,
+    default:false,
+  },
 
 updated:{ type: Date, default: moment(Date.now()).format("DD MMM YYYY")},
 created:{ type: Date, default: moment(Date.now()).format("DD MMM YYYY")}

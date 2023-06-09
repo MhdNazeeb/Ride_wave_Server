@@ -15,6 +15,7 @@ const signup = async (req, res) => {
         .create({
           name: fname,
           email: email,
+          isUser:true,
           EmailToken: crypto.randomBytes(64).toString("hex"),
           password: hashedpassword,
           confirm_password: hashedconfirmpassword,
@@ -34,7 +35,7 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const findUser = await user.findOne({ email: email });
+    const findUser = await user.findOne({ email: email,isUser:true });
     if (!findUser) return res.json({ status: "User doesn't exist" });
 
     const isPasswordCorrect = await bcrypt.compare(password, findUser.password);
@@ -43,17 +44,19 @@ const login = async (req, res) => {
      return res.json({ status: "incorrect password" });
     }
     console.log(findUser, "find user ");
-    if (findUser.status === true && isPasswordCorrect) {
+    if (findUser.isverify === true && isPasswordCorrect) {
       const toke = jwt.sign(
         { id: findUser._id, role: "user" },
         "ClientTokenSecret",
         { expiresIn: "5h" }
       );
-      if (!findUser.isverify) {
+      if (!findUser.userVerify) {
         sendEmail(findUser, res);
         return ;
       }
       res.status(200).json({token:toke,user:findUser,status:'Login success'})
+    }else{
+      res.status(200).json({message:'your account has been banned'})
     }
   } catch (error) {
     console.log(error.message, "message");
@@ -98,7 +101,7 @@ const verifyLink = async (req, res) => {
     console.log(userid);
     const isverifyuser = await user.findByIdAndUpdate(
       { _id: userid },
-      { $set: { isverify: true } },
+      { $set: { userVerify: true } },
       { new: true }
     );
     const toke = jwt.sign(

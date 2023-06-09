@@ -2,6 +2,7 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const cloudinary = require("../../utils/Cloudinary");
 const user = require("../../models/user");
+const Car = require('../../models/car')
 const jwt = require("jsonwebtoken");
 
 const signup = async (req, res) => {
@@ -23,7 +24,6 @@ const signup = async (req, res) => {
       const file = await cloudinary.uploader.upload(license, {
         folder: "DriverLicense",
       });
-      console.log(file, "this cloud file");
       await user
         .create({
           name: fname,
@@ -32,6 +32,7 @@ const signup = async (req, res) => {
           confirm_password: hashedconfirmpassword,
           license: file.secure_url,
           isDriver: true,
+          DriverStatus: true,
         })
         .then(() => {
           res.status(200).json({ message: "new account created sucessfully" });
@@ -50,7 +51,7 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
+  
     const findDriver = await user.findOne({ email: email ,isDriver:true });
     if (!findDriver) return res.json({ status: "User doesn't exist" });
     const isPasswordCorrect = await bcrypt.compare(password, findDriver.password);
@@ -80,8 +81,38 @@ const login = async (req, res) => {
     }
      
     };
+    const carRegister = async (req,res)=>{
+    try {
+      const { model, year,RegistrationNumber,Seats,Features,Carimage,Rate} = req.body
+      
+      const findcar = await Car.findOne({RegistrationNumber:RegistrationNumber})
+         if(!findcar){
+          const file = await cloudinary.uploader.upload(Carimage, {
+            folder: "carImage",
+          });
+          const car = await Car.create({
+            model:model,
+            year:year,
+            RegistrationNumber:RegistrationNumber,
+            Seats:Seats,
+            Features:Features,
+            Rate:Rate,
+            carimage:file.secure_url
+          })
+          console.log(car,'this is your car');
+          res.status(200).json({message:'it  may take 24 houres to verify your car'})
+         }else{
+          res.status(200).json({message:'Registration number allready exists'})
+         }
+     
+    } catch (error) {
+      res.status(500).json({message:'something  wrong'})
+      console.log(error.message,);
+    }
+    }
 
 module.exports = {
   signup,
   login,
+  carRegister
 };
