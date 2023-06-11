@@ -31,8 +31,8 @@ const addressSchema = new mongoose.Schema({
     type:String
    },
   isverify:{
-    type: Boolean,
-    default:false
+    type: String,
+    default:'not verified'
   },
   EmailToken:{
     type: String,
@@ -44,15 +44,17 @@ const addressSchema = new mongoose.Schema({
   },
   isDriver:{
     type:Boolean,
-    default:false,
+    default:false
+    
   },
   DriverStatus:{
     type:Boolean,
-    default:false,
+   
   },
   isUser:{
     type:Boolean,
-    default:false,
+    default:false
+    
   },
   userVerify:{
     type:Boolean,

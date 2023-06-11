@@ -9,13 +9,11 @@ const signup = async (req, res) => {
   try {
     const { fname, password, cpassword, email, license } = req.body;
     const findUser = await user.findOne({ email: email });
-
     console.log(findUser, "this find user");
     if (findUser && findUser.isDriver) {
-      console.log("user allredy ");
+      console.log('this user');
       return res.json({ message: "email is all ready registred" });
     }
-
     if (password && cpassword) {
       const hashedpassword = await bcrypt.hash(password, 10);
 
@@ -24,7 +22,21 @@ const signup = async (req, res) => {
       const file = await cloudinary.uploader.upload(license, {
         folder: "DriverLicense",
       });
+    if (findUser && !findUser.isDriver) {
+      console.log('this user');
       await user
+        .findOneAndUpdate({email: email },{
+          name: fname,
+          password: hashedpassword,
+          confirm_password: hashedconfirmpassword,
+          license: file.secure_url,
+          isDriver: true,
+          DriverStatus: true,
+        })
+      return res.json({ message: "new account created sucessfully" });
+    }
+    
+        await user
         .create({
           name: fname,
           email: email,
@@ -54,13 +66,17 @@ const login = async (req, res) => {
   
     const findDriver = await user.findOne({ email: email ,isDriver:true });
     if (!findDriver) return res.json({ status: "User doesn't exist" });
+
     const isPasswordCorrect = await bcrypt.compare(password, findDriver.password);
     console.log(isPasswordCorrect, "password");
     if (!isPasswordCorrect) {
       return res.json({ status: "incorrect password" });
     }
-    console.log(findDriver, "find driver ");
-    if (findDriver.isverify === true && isPasswordCorrect) {
+      if(findDriver.isverify==='Rejected') {
+        await user.deleteOne(findDriver._id) 
+      return  res.json({status:'We regret to inform you that your account verification request has been rejected'})
+      }
+    if (findDriver.isverify === 'verified' && isPasswordCorrect) {
       if (findDriver.DriverStatus) {
         const toke = jwt.sign(
           { id: findDriver._id, role: "driver" },
@@ -69,11 +85,11 @@ const login = async (req, res) => {
         );
         res.status(200).json({ token: toke, driver: findDriver, status: "Login success" });
       }else{
-        res.status(200).json({status:'this id is blocked'});
+       return res.status(200).json({status:'your account has been banned'});
       }
       
       }else{
-      res.status(200).json({status:'it may take 24 houres to verify driver'})
+      return res.status(200).json({status:'it may take 24 houres to verify driver'})
       }
     }catch (error){
     console.log(error.message);
@@ -83,7 +99,8 @@ const login = async (req, res) => {
     };
     const carRegister = async (req,res)=>{
     try {
-      const { model, year,RegistrationNumber,Seats,Features,Carimage,Rate} = req.body
+      console.log('this is rejister car');
+      const { model, year,RegistrationNumber,Features,Carimage,Rate} = req.body
       
       const findcar = await Car.findOne({RegistrationNumber:RegistrationNumber})
          if(!findcar){
@@ -94,7 +111,6 @@ const login = async (req, res) => {
             model:model,
             year:year,
             RegistrationNumber:RegistrationNumber,
-            Seats:Seats,
             Features:Features,
             Rate:Rate,
             carimage:file.secure_url

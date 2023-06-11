@@ -15,10 +15,6 @@ const carSchema = new mongoose.Schema({
     required: [true],
     unique: true,
   },
-  Seats: {
-    type: String,
-    required: [true],
-  },
   Features: {
     type: String,
     required: [true],
@@ -33,8 +29,8 @@ const carSchema = new mongoose.Schema({
    
   },
   carVerify:{
-    type:Boolean,
-    default:false
+    type:String,
+    default:'not verified'
 
   },
   updated: { type: Date, default: moment(Date.now()).format("DD MMM YYYY") },

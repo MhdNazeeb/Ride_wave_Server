@@ -7,10 +7,25 @@ const { token } = require("morgan");
 const signup = async (req, res) => {
   try {
     const { fname, password, cpassword, email } = req.body;
-
+      const samemail = await user.findOne({email:email})
+      if(samemail && samemail.isUser) {
+        return res.json({message:'email all ready registered'}) 
+      } 
     if (password && cpassword) {
       const hashedpassword = await bcrypt.hash(password, 10);
       const hashedconfirmpassword = await bcrypt.hash(cpassword, 10);
+
+      if(samemail && !samemail.isUser){
+      await user.findOneAndUpdate({email:email},{
+        name: fname,
+        isUser:true,
+        password: hashedpassword,
+        confirm_password: hashedconfirmpassword, 
+      })
+      .then(() => { 
+        return res.status(200).json({ message: "new account created sucessfully" });
+       })
+      }
       await user
         .create({
           name: fname,
@@ -19,15 +34,18 @@ const signup = async (req, res) => {
           EmailToken: crypto.randomBytes(64).toString("hex"),
           password: hashedpassword,
           confirm_password: hashedconfirmpassword,
+          
         })
         .then(() => {
-          res.status(200).json({ message: "new account created sucessfully" });
+         return res.status(200).json({ message: "new account created sucessfully" });
         })
-        .catch(() => {
-          res.status(500);
+        .catch((e) => {
+          
+         return res.status(500);
         });
     }
   } catch (error) {
+    console.log(error.message);
     res.status(500);
   }
 };
@@ -36,7 +54,10 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     const findUser = await user.findOne({ email: email,isUser:true });
-    if (!findUser) return res.json({ status: "User doesn't exist" });
+    if (!findUser){
+      console.log('this is null');
+      return res.json({ status: "User doesn't exist" });
+    } 
 
     const isPasswordCorrect = await bcrypt.compare(password, findUser.password);
     console.log(isPasswordCorrect, "password");
@@ -44,7 +65,7 @@ const login = async (req, res) => {
      return res.json({ status: "incorrect password" });
     }
     console.log(findUser, "find user ");
-    if (findUser.isverify === true && isPasswordCorrect) {
+    if (findUser.status === true && isPasswordCorrect) {
       const toke = jwt.sign(
         { id: findUser._id, role: "user" },
         "ClientTokenSecret",

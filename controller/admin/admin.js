@@ -39,7 +39,7 @@ const login = async (req, res) => {
 const getUsers = async (req, res) => {
   try {
     const users = await user.find({ isUser: true });
-        console.log(users,'this is users');
+        
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ status: error.message });
@@ -51,7 +51,7 @@ const blockUser = async (req, res) => {
     if (blocking === "active") {
       const blockedUser = await user.findOneAndUpdate(
         { _id: id },
-        { $set: { userVerify: false } },
+        { $set: { status: false } },
         { new: true }
       );
       
@@ -60,11 +60,38 @@ const blockUser = async (req, res) => {
       console.log("this is active");
       const activedUser = await user.findOneAndUpdate(
         { _id: id },
-        { $set: { userVerify: true } },
+        { $set: { status: true } },
         { new: true }
       );
       console.log(activedUser);
       res.status(200).json(activedUser);
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const blockDrivers = async (req, res) => {
+  try {
+    const { id, status } = req.body;
+    console.log(id,status,'this status');
+    if (status === "active") {
+      console.log('false');
+      const blockedUsers = await user.findOneAndUpdate(
+        { _id: id },
+        { $set: { DriverStatus: false } },
+        { new: true }
+      );
+      
+      res.status(200).json(blockedUsers);
+    } else {
+      console.log('true');
+      const activedUsers = await user.findOneAndUpdate(
+        { _id: id },
+        { $set: { DriverStatus: true } },
+        { new: true }
+      );
+      
+      res.status(200).json(activedUsers);
     }
   } catch (error) {
     console.log(error.message);
@@ -94,14 +121,14 @@ const blockDriver = async (req, res) => {
       console.log(status);
       const verifyDriver = await user.findOneAndUpdate(
         { _id: id },
-        { isverify: true },
+        { isverify: 'verified' },
         { new: true }
       );
       res.status(200).json(verifyDriver);
     } else {
       const rejectedDriver = await user.findOneAndUpdate(
         { _id: id },
-        { isverify: false }
+        { isverify: 'Rejected' }
       );
       res.status(200).json(rejectedDriver);
     }
@@ -119,6 +146,22 @@ const carList = async (req, res) => {
   }
  
 };
+const getCar = async(req,res)=>{
+  try {
+    const {id} = req.query
+    const car = await Car.findOne({_id:id})
+    res.status(200).json(car)
+  } catch (error) {
+    
+  }
+}
+const verifyCar = async (req,res)=>{
+try {
+  console.log(req.body,'kkkkkkkkkk');
+} catch (error) {
+  
+}
+}
 module.exports = {
   login,
   getUsers,
@@ -127,4 +170,7 @@ module.exports = {
   getDriver,
   blockDriver,
   carList,
+  getCar,
+  blockDrivers,
+  verifyCar
 };
