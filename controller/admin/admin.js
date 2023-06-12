@@ -39,7 +39,7 @@ const login = async (req, res) => {
 const getUsers = async (req, res) => {
   try {
     const users = await user.find({ isUser: true });
-        
+
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ status: error.message });
@@ -54,7 +54,7 @@ const blockUser = async (req, res) => {
         { $set: { status: false } },
         { new: true }
       );
-      
+
       res.status(200).json(blockedUser);
     } else {
       console.log("this is active");
@@ -73,24 +73,24 @@ const blockUser = async (req, res) => {
 const blockDrivers = async (req, res) => {
   try {
     const { id, status } = req.body;
-    console.log(id,status,'this status');
+    console.log(id, status, "this status");
     if (status === "active") {
-      console.log('false');
+      console.log("false");
       const blockedUsers = await user.findOneAndUpdate(
         { _id: id },
         { $set: { DriverStatus: false } },
         { new: true }
       );
-      
+
       res.status(200).json(blockedUsers);
     } else {
-      console.log('true');
+      console.log("true");
       const activedUsers = await user.findOneAndUpdate(
         { _id: id },
         { $set: { DriverStatus: true } },
         { new: true }
       );
-      
+
       res.status(200).json(activedUsers);
     }
   } catch (error) {
@@ -121,14 +121,14 @@ const blockDriver = async (req, res) => {
       console.log(status);
       const verifyDriver = await user.findOneAndUpdate(
         { _id: id },
-        { isverify: 'verified' },
+        { isverify: "verified" },
         { new: true }
       );
       res.status(200).json(verifyDriver);
     } else {
       const rejectedDriver = await user.findOneAndUpdate(
         { _id: id },
-        { isverify: 'Rejected' }
+        { isverify: "Rejected" }
       );
       res.status(200).json(rejectedDriver);
     }
@@ -139,29 +139,42 @@ const blockDriver = async (req, res) => {
 const carList = async (req, res) => {
   try {
     const carsFound = await Car.find({});
-    res.status(200).json(carsFound)
-    
+    res.status(200).json(carsFound);
   } catch (error) {
     console.log(error.message);
   }
- 
 };
-const getCar = async(req,res)=>{
+const getCar = async (req, res) => {
   try {
-    const {id} = req.query
-    const car = await Car.findOne({_id:id})
-    res.status(200).json(car)
-  } catch (error) {
+    const { id } = req.query;
+    const car = await Car.findOne({ _id: id });
+    res.status(200).json(car);
+  } catch (error) {}
+};
+const verifyCar = async (req, res) => {
+  try {
+    const { id, status } = req.body;
+    if (status === "verified") {
+      const carVerify = await Car.findOneAndUpdate(
+        { _id: id },
+        { $set: { carVerify: "verified" } },
+        {new:true}
+      );
+      res.status(200).json(carVerify)
+    }else{
+      const rejectCar = await Car.findOneAndUpdate(
+        { _id: id },
+        { $set: { carVerify: "Rejected" } },
+        {new:true}
+      );
+      res.status(200).json(rejectCar)
+    }
     
+    
+  } catch (error) {
+    res.status(500)
   }
-}
-const verifyCar = async (req,res)=>{
-try {
-  console.log(req.body,'kkkkkkkkkk');
-} catch (error) {
-  
-}
-}
+};
 module.exports = {
   login,
   getUsers,
@@ -172,5 +185,5 @@ module.exports = {
   carList,
   getCar,
   blockDrivers,
-  verifyCar
+  verifyCar,
 };
