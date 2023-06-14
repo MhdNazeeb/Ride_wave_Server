@@ -33,6 +33,12 @@ const carSchema = new mongoose.Schema({
     default:'not verified'
 
   },
+  userId:{
+   type: mongoose.Schema.Types.ObjectId,
+   ref:'user'
+   
+  },
+  
   updated: { type: Date, default: moment(Date.now()).format("DD MMM YYYY") },
   created: { type: Date, default: moment(Date.now()).format("DD MMM YYYY") },
 });

@@ -54,25 +54,28 @@ const verifyTokenClient = async (req, res, next) => {
 
 const verifyTokenDriver = async (req, res, next) => {
   try {
+     
     let token = req.headers["authorization"];
-    console.log(token,'trainer token')
+    console.log(token,'driver token')
     if (!token) {
       return res.status(403).send("Access Denied");
     }
 
     if (token.startsWith("Bearer ")) {
+      console.log('start with');
       token = token.slice(7, token.length).trimLeft();
     }
-    const verified = jwt.verify(token, "trainerTokenSecret");
+    const verified = jwt.verify(token,"DriverTokenSecret");
     req.user = verified;
-    if (verified.role == "trainer") {
-      console.log("trainer with token");
+    
+    if (verified.role == "driver") {
+      console.log("DRIVER with token");
       next();
     } else {
       return res.status(403).send("Access Denied");
     }
   } catch (err) {
-    console.log(err.message,'error message in trainer auth middleware')
+    console.log(err.message,'error message in driver auth middleware')
     res.status(500).json({ message: err.message });
   }
 };

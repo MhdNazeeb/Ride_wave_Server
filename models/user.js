@@ -3,6 +3,7 @@ const mongoose =  require('mongoose')
 const moment = require("moment");
 
 const addressSchema = new mongoose.Schema({
+
     name: {
         type: String,
         required: [true],
@@ -60,6 +61,11 @@ const addressSchema = new mongoose.Schema({
     type:Boolean,
     default:false,
   },
+  carId:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'car'
+  },
+
 
 updated:{ type: Date, default: moment(Date.now()).format("DD MMM YYYY")},
 created:{ type: Date, default: moment(Date.now()).format("DD MMM YYYY")}

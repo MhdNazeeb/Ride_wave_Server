@@ -89,7 +89,7 @@ const login = async (req, res) => {
       if (findDriver.DriverStatus) {
         const toke = jwt.sign(
           { id: findDriver._id, role: "driver" },
-          "ClientTokenSecret",
+          "DriverTokenSecret",
           { expiresIn: "5h" }
         );
         res
@@ -111,10 +111,21 @@ const login = async (req, res) => {
 const carRegister = async (req, res) => {
   try {
     console.log("this is rejister car");
-    const { model, year, RegistrationNumber, Features, Carimage, Rate } =
-      req.body;
-
-    const findcar = await Car.findOne({
+    const {
+      model,
+      year,
+      RegistrationNumber,
+      Features,
+      Carimage,
+      Rate,
+      driverid,
+    } = req.body;
+    const findCar = await Car.findOne({ userId: driverid });
+    if (findCar)
+      return res
+        .status(200)
+        .json({ message: "this account has allready registerd" });
+    const findcarno = await Car.findOne({
       RegistrationNumber: RegistrationNumber,
     });
     if (!findcar) {
@@ -128,6 +139,7 @@ const carRegister = async (req, res) => {
         Features: Features,
         Rate: Rate,
         carimage: file.secure_url,
+        userId: req.user.id,
       });
       console.log(car, "this is your car");
       res
@@ -143,8 +155,8 @@ const carRegister = async (req, res) => {
 };
 const profile = async (req, res) => {
   try {
-    const { data} = req.body;
-    console.log(data,'thiis is data');
+    const { data } = req.body;
+    console.log(data, "thiis is data");
     const findDriver = await user.findOneAndUpdate(
       { _id: data.driverid },
       {
@@ -155,27 +167,37 @@ const profile = async (req, res) => {
       },
       { new: true }
     );
-    console.log(findDriver,'this is new drivr');
-    res.status(200).json({message:'success'})
-       
+    console.log(findDriver, "this is new drivr");
+    res.status(200).json({ message: "success" });
   } catch (error) {
-    console.log(error.message,'this eroorrrrr');
+    console.log(error.message, "this eroorrrrr");
   }
 };
-const getProfile = async (req,res)=>{
+const getProfile = async (req, res) => {
   try {
-    const {data} = req.query
-     const findUser = await user.findOne({_id:data})
-     res.status(200).json(findUser)
+    const { data } = req.query;
+    const findUser = await user.findOne({ _id: data });
+    res.status(200).json(findUser);
   } catch (error) {
-    res.status(500)
+    res.status(500);
   }
-}
+};
+const getCar = async (req, res) => {
+  try {
+    const { driverid } = req.query;
+    const findCar = await Car.findOne({ userId: driverid });
+    console.log(findCar,'this user car');
+    res.status(200).json(findCar);
+  } catch (error) {
+    res.status(500);
+  }
+};
 
 module.exports = {
   signup,
   login,
   carRegister,
   profile,
-  getProfile
+  getProfile,
+  getCar,
 };
