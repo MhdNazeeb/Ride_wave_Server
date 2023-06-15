@@ -125,7 +125,7 @@ const carRegister = async (req, res) => {
       return res
         .status(200)
         .json({ message: "this account has allready registerd" });
-    const findcarno = await Car.findOne({
+    const findcar = await Car.findOne({
       RegistrationNumber: RegistrationNumber,
     });
     if (!findcar) {
@@ -186,9 +186,60 @@ const getCar = async (req, res) => {
   try {
     const { driverid } = req.query;
     const findCar = await Car.findOne({ userId: driverid });
-    console.log(findCar,'this user car');
     res.status(200).json(findCar);
   } catch (error) {
+    res.status(500);
+  }
+};
+const editCar = async (req, res) => {
+  try {
+    
+    const {
+      model,
+      year,
+      RegistrationNumber,
+      Features,
+      Rate,
+      image,
+      driverid,
+      carimage,
+    } = req.body;
+    if (carimage.length === 0) {
+
+      const UpdateCar = await Car.findOneAndUpdate(
+        { userId: driverid },
+        {
+          model: model,
+          year: year,
+          RegistrationNumber: RegistrationNumber,
+          Features: Features,
+          Rate: Rate,
+          carimage: image,
+          userId: driverid,
+        }
+      );
+      res.status(200).json({message:'updated successfully'})
+    }else{
+      const file = await cloudinary.uploader.upload(carimage, {
+        folder: "carImage",
+      });
+      const UpdateCarOne = await Car.findOneAndUpdate(
+        { userId: driverid },
+        {
+          model: model,
+          year: year,
+          RegistrationNumber: RegistrationNumber,
+          Features: Features,
+          Rate: Rate,
+          carimage: file.secure_url,
+          userId: driverid,
+        }
+      );
+      res.status(200).json({message:'updated successfully'})
+    }
+    
+  } catch (error) {
+    console.log(error.message);
     res.status(500);
   }
 };
@@ -200,4 +251,5 @@ module.exports = {
   profile,
   getProfile,
   getCar,
+  editCar,
 };
