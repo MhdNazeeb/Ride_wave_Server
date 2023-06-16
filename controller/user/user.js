@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const user = require("../../models/user");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const Car =require('../../models/car')
 const nodemailer = require("nodemailer");
 const { token } = require("morgan");
 const jwt_decode = require("jwt-decode");
@@ -170,9 +171,17 @@ const verifyLink = async (req, res) => {
     console.log(error.message);
   }
 };
-
+const carList = async (req,res)=>{
+ try {
+  const fidCar = await Car.find({LocationStatus:'on',RideStatus:'not booked'})
+ } catch (error) {
+  console.log(error.message);
+  res.status(500)
+ }
+}
 module.exports = {
   signup,
   login,
   verifyLink,
+  carList
 };

@@ -33,11 +33,20 @@ const carSchema = new mongoose.Schema({
     default:'not verified'
 
   },
+  RideStatus:{
+    type:String,
+    default:'not booked'
+  },
+  LocationStatus:{
+    type:String,
+    default:'of'
+  },
   userId:{
    type: mongoose.Schema.Types.ObjectId,
    ref:'user'
    
   },
+  
   
   updated: { type: Date, default: moment(Date.now()).format("DD MMM YYYY") },
   created: { type: Date, default: moment(Date.now()).format("DD MMM YYYY") },

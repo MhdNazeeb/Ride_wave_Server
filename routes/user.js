@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const {signup,login,verifyLink}=require('../controller/user/user');
+const {signup,login,verifyLink,carList}=require('../controller/user/user');
 
 
 
@@ -8,6 +8,7 @@ const {signup,login,verifyLink}=require('../controller/user/user');
 router.post('/signup',signup)
 router.post('/login',login)
 router.get('/verify',verifyLink)
+router.get('/carlist',carList)
 
 
 
