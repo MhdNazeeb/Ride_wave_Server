@@ -173,7 +173,8 @@ const verifyLink = async (req, res) => {
 };
 const carList = async (req,res)=>{
  try {
-  const fidCar = await Car.find({LocationStatus:'on',RideStatus:'not booked'})
+  const findCar = await Car.find({LocationStatus:'on'}).populate('userId')
+  res.status(200).json(findCar)
  } catch (error) {
   console.log(error.message);
   res.status(500)
