@@ -3,7 +3,7 @@ const router = express.Router();
  const {signup,login, carRegister,profile,getProfile,getCar,editCar}=require('../controller/driver/driver')
  const {verifyTokenDriver}= require('../middlewares/auth')
 /* GET driver listing. */
-
+console.log('aa');
  router.post('/signup',signup)
  router.post('/login',login)
  router.post('/car',verifyTokenDriver,carRegister)
