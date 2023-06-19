@@ -6,6 +6,7 @@ const Car =require('../../models/car')
 const nodemailer = require("nodemailer");
 const { token } = require("morgan");
 const jwt_decode = require("jwt-decode");
+const booking = require('../../models/Booking')
 const signup = async (req, res) => {
   try {
     const { fname, password, cpassword, email } = req.body;
@@ -180,9 +181,36 @@ const carList = async (req,res)=>{
   res.status(500)
  }
 }
+const bookCar  = async (req,res)=>{
+try {
+  // const otp = Math.floor(500000+Math.random()*5000000)
+  //  console.log(req.body,'this body');
+  //  const findChekout = await booking.create({
+  //   driver:driver,
+  //   date:date,
+  //   time:time,
+  //   location:{
+  //     pickup:pickup,
+  //     dropoff:dropOff,
+  //     distance: distance
+  //   },
+  //   verficationCode:otp,
+  //   bookingStatus:'Pending',
+  //   passengers:[
+
+  //   ]
+
+
+
+  //  })
+} catch (error) {
+  
+}
+}
 module.exports = {
   signup,
   login,
   verifyLink,
-  carList
+  carList,
+  bookCar
 };

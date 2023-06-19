@@ -39,8 +39,9 @@ const verifyTokenClient = async (req, res, next) => {
       token = token.slice(7, token.length).trimLeft();
     }
     const verified = jwt.verify(token, "ClientTokenSecret");
+    console.log(verified,'this verifird');
     req.user = verified;
-    if (verified.role == "client") {
+    if (verified.role == "user") {
       console.log("client with token");
       next();
     } else {
