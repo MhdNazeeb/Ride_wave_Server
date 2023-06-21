@@ -1,9 +1,10 @@
 const mongoose = require('mongoose') ;
+require('dotenv').config()
 
 mongoose.set("strictQuery", false);
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect('mongodb+srv://naseebn819:naseebn819@cluster0.uy9qt6g.mongodb.net/ridewave', {
+    const conn = await mongoose.connect(process.env.DATA_BASE, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

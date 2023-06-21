@@ -2,11 +2,11 @@ const bcrypt = require("bcrypt");
 const user = require("../../models/user");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const Car =require('../../models/car')
+const Car = require("../../models/car");
 const nodemailer = require("nodemailer");
 const { token } = require("morgan");
 const jwt_decode = require("jwt-decode");
-const booking = require('../../models/Booking')
+const booking = require("../../models/Booking");
 const signup = async (req, res) => {
   try {
     const { fname, password, cpassword, email } = req.body;
@@ -60,7 +60,7 @@ const signup = async (req, res) => {
 };
 const login = async (req, res) => {
   try {
-    let { email, password, google,id } = req.body;
+    let { email, password, google, id } = req.body;
 
     if (google) {
       const decoded = jwt_decode(id);
@@ -137,12 +137,10 @@ const sendEmail = async (finduser, res) => {
       res.status(404).json({ status: error.message });
     } else {
       console.log("email send  suuccessfulllly");
-      res
-        .status(200)
-        .json({
-          message: "not verified",
-          status: `verification link has been send to ${info.accepted[0]}`,
-        });
+      res.status(200).json({
+        message: "not verified",
+        status: `verification link has been send to ${info.accepted[0]}`,
+      });
     }
   });
 };
@@ -161,56 +159,114 @@ const verifyLink = async (req, res) => {
       "ClientTokenSecret",
       { expiresIn: "5h" }
     );
-    res
-      .status(200)
-      .json({
-        token: toke,
-        user: isverifyuser,
-        status: "Account has been verified successfully",
-      });
+    res.status(200).json({
+      token: toke,
+      user: isverifyuser,
+      status: "Account has been verified successfully",
+    });
   } catch (error) {
     console.log(error.message);
   }
 };
-const carList = async (req,res)=>{
- try {
-  const findCar = await Car.find({LocationStatus:'on'}).populate('userId')
-  res.status(200).json(findCar)
- } catch (error) {
-  console.log(error.message);
-  res.status(500)
- }
-}
-const bookCar  = async (req,res)=>{
-try {
-  // const otp = Math.floor(500000+Math.random()*5000000)
-  //  console.log(req.body,'this body');
-  //  const findChekout = await booking.create({
-  //   driver:driver,
-  //   date:date,
-  //   time:time,
-  //   location:{
-  //     pickup:pickup,
-  //     dropoff:dropOff,
-  //     distance: distance
-  //   },
-  //   verficationCode:otp,
-  //   bookingStatus:'Pending',
-  //   passengers:[
-
-  //   ]
-
-
-
-  //  })
-} catch (error) {
-  
-}
-}
+const carList = async (req, res) => {
+  try {
+    const {  pickup,drop } = req.query;
+    console.log(req.query)
+   console.log(  pickup,drop )
+    let carid = [];
+    const FindCar = await booking.find({
+      "location.pickup": pickup,
+      "location.dropoff": drop,
+    });
+    FindCar.map((val)=>{
+      carid.push(val.driver.toString())
+    })
+    console.log(carid,"llladasa")
+      const findCar = await Car.find({$or:[{userId:{$in:carid}},{RideStatus:"not booked"}]}).populate("userId");
+      console.log(
+        findCar,"llllllllllllllll");
+      res.status(200).json(findCar);
+   
+  } catch (error) {
+    console.log(error.message);
+    res.status(500);
+  }
+};
+const bookCar = async (req, res) => {
+  try {
+    const { pickup, dropOff, driver, distance, date, userid, Rate, time } =
+      req.body;
+    const otp = Math.floor(500000 + Math.random() * 5000000);
+    const findCheckout = await booking.findOne({
+      driver: driver._id,
+      bookingStatus: "Pending",
+    });
+    const perSeat = Rate / 4;
+    if (!findCheckout) {
+      const findChekout = await booking.create({
+        driver: driver._id,
+        date: date,
+        time: time,
+        location: {
+          pickup: pickup,
+          dropoff: dropOff,
+          distance: distance,
+        },
+        verficationCode: otp,
+        bookingStatus: "Pending",
+        passengers: [
+          {
+            user: userid,
+            advancePayment: {
+              status: true,
+              amount: perSeat,
+            },
+            totalPayment: {
+              amount: Rate,
+            },
+          },
+        ],
+      });
+      const updateCar = await Car.findOneAndUpdate(
+        { userId: driver._id },
+        { $set: { RideStatus: "booked" } }
+      );
+      res.status(200).json(findChekout);
+    } else {
+      const updatedBooking = await booking.findOneAndUpdate(
+        { driver: driver._id },
+        {
+          $push: {
+            passengers: {
+              user: userid,
+              advancePayment: {
+                status: true,
+                amount: perSeat,
+              },
+              totalPayment: {
+                amount: Rate,
+              },
+            },
+          },
+        },
+        { new: true }
+      );
+      const updateCar = await Car.findOneAndUpdate(
+        { userId: driver._id },
+        { $set: { RideStatus: "booked" } }
+      );
+      console.log(updatedBooking, "thisssss updated booking");
+      res.status(200).json(updatedBooking);
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500);
+  }
+};
 module.exports = {
   signup,
   login,
   verifyLink,
   carList,
-  bookCar
+  bookCar,
 };

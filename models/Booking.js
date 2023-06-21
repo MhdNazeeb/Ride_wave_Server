@@ -55,7 +55,6 @@ const tripSchema = new mongoose.Schema(
         },
         amount:{
             type:Number,
-            default:0
         }
         
         },

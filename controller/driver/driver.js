@@ -176,7 +176,12 @@ const profile = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     const { data } = req.query;
-    const findUser = await user.findOne({ _id: data });
+
+    let findUser = await user.findOne({ _id: data });
+    const findCar = await Car.findOne({ userId: findUser._id });
+   
+    findCar ? findUser = {...findUser,IsCar:true} : findUser = {...findUser,IsCar:false};
+    
     res.status(200).json(findUser);
   } catch (error) {
     res.status(500);
@@ -186,6 +191,7 @@ const getCar = async (req, res) => {
   try {
     const { driverid } = req.query;
     const findCar = await Car.findOne({ userId: driverid });
+    console.log(findCar, "this findCar");
     res.status(200).json(findCar);
   } catch (error) {
     res.status(500);
@@ -193,7 +199,6 @@ const getCar = async (req, res) => {
 };
 const editCar = async (req, res) => {
   try {
-    
     const {
       model,
       year,
@@ -205,7 +210,6 @@ const editCar = async (req, res) => {
       carimage,
     } = req.body;
     if (carimage.length === 0) {
-
       const UpdateCar = await Car.findOneAndUpdate(
         { userId: driverid },
         {
@@ -218,8 +222,8 @@ const editCar = async (req, res) => {
           userId: driverid,
         }
       );
-      res.status(200).json({message:'updated successfully'})
-    }else{
+      res.status(200).json({ message: "updated successfully" });
+    } else {
       const file = await cloudinary.uploader.upload(carimage, {
         folder: "carImage",
       });
@@ -235,9 +239,8 @@ const editCar = async (req, res) => {
           userId: driverid,
         }
       );
-      res.status(200).json({message:'updated successfully'})
+      res.status(200).json({ message: "updated successfully" });
     }
-    
   } catch (error) {
     console.log(error.message);
     res.status(500);
