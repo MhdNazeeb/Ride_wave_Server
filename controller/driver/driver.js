@@ -157,6 +157,11 @@ const profile = async (req, res) => {
   try {
     const { data } = req.body;
     console.log(data, "thiis is data");
+    const findEmail = await user.findOne({ email: data.email });
+    if (findEmail) {
+      return res.status(200).json({ message:"email already registered"});
+    }
+
     const findDriver = await user.findOneAndUpdate(
       { _id: data.driverid },
       {
@@ -179,9 +184,11 @@ const getProfile = async (req, res) => {
 
     let findUser = await user.findOne({ _id: data });
     const findCar = await Car.findOne({ userId: findUser._id });
-   
-    findCar ? findUser = {...findUser,IsCar:true} : findUser = {...findUser,IsCar:false};
-    
+
+    findCar
+      ? (findUser = { ...findUser, IsCar: true })
+      : (findUser = { ...findUser, IsCar: false });
+
     res.status(200).json(findUser);
   } catch (error) {
     res.status(500);
