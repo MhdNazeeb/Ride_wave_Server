@@ -159,7 +159,7 @@ const profile = async (req, res) => {
     console.log(data, "thiis is data");
     const findEmail = await user.findOne({ email: data.email });
     if (findEmail) {
-      return res.status(200).json({ message:"email already registered"});
+      return res.status(200).json({ message: "email already registered" });
     }
 
     const findDriver = await user.findOneAndUpdate(
@@ -253,6 +253,40 @@ const editCar = async (req, res) => {
     res.status(500);
   }
 };
+const driverLocation = async (req, res) => {
+  try {
+    const { driverCoordinates, driverid, active } = req.body;
+    console.log(active, "this active");
+    if (active === true) {
+      const updateLocation = await Car.findOneAndUpdate(
+        { userId: driverid },
+        { $set: { LocationStatus: "on", location: driverCoordinates } },
+        { new: true }
+      );
+      res.status(200).json({ message: "Your location on" });
+    } else {
+      const updateLocation = await Car.findOneAndUpdate(
+        { userId: driverid },
+        { $set: { LocationStatus: "of", location: driverCoordinates } },
+        { new: true }
+      );
+      res.status(200).json({ message: "Location of" });
+    }
+  } catch (error) {
+    res.status(500);
+    console.log(error.message, "this message");
+  }
+};
+const car = async (req, res) => {
+  try {
+    const { driverid } = req.query;
+    const findcar = await Car.findOne({ userId: driverid });
+    res.status(200).json(findcar)
+    res.status(200);
+  } catch (error) {
+    res.status(500);
+  }
+};
 
 module.exports = {
   signup,
@@ -262,4 +296,6 @@ module.exports = {
   getProfile,
   getCar,
   editCar,
+  driverLocation,
+  car,
 };

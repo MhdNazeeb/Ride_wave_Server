@@ -170,21 +170,8 @@ const verifyLink = async (req, res) => {
 };
 const carList = async (req, res) => {
   try {
-  //   const {  pickup,drop } = req.query;
-  //   console.log(req.query)
-  //  console.log(  pickup,drop )
-  //   let carid = [];
-  //   const FindCar = await booking.find({
-  //     "location.pickup": pickup,
-  //     "location.dropoff": drop,
-  //   });
-  //   FindCar.map((val)=>{
-  //     carid.push(val.driver.toString())
-  //   })
-  //   console.log(carid,"llladasa")
       const findCar = await Car.find({LocationStatus:'on'}).populate("userId");
-      console.log(
-        findCar,"llllllllllllllll");
+      console.log(findCar,'this find car');
       res.status(200).json(findCar);
    
   } catch (error) {

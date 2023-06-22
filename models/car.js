@@ -46,7 +46,10 @@ const carSchema = new mongoose.Schema({
    ref:'user'
    
   },
-  
+  location:{
+    type:Array,
+
+  },
   
   updated: { type: Date, default: moment(Date.now()).format("DD MMM YYYY") },
   created: { type: Date, default: moment(Date.now()).format("DD MMM YYYY") },
