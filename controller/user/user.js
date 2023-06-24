@@ -7,6 +7,7 @@ const nodemailer = require("nodemailer");
 const { token } = require("morgan");
 const jwt_decode = require("jwt-decode");
 const booking = require("../../models/Booking");
+const wallet = require("../../models/Wallet");
 const signup = async (req, res) => {
   try {
     const { fname, password, cpassword, email } = req.body;
@@ -19,39 +20,45 @@ const signup = async (req, res) => {
       const hashedconfirmpassword = await bcrypt.hash(cpassword, 10);
 
       if (samemail && !samemail.isUser) {
-        await user
-          .findOneAndUpdate(
-            { email: email },
-            {
-              name: fname,
-              isUser: true,
-              password: hashedpassword,
-              confirm_password: hashedconfirmpassword,
-            }
-          )
-          .then(() => {
-            return res
-              .status(200)
-              .json({ message: "new account created sucessfully" });
+        const updatedData = await user.findOneAndUpdate(
+          { email: email },
+          {
+            name: fname,
+            isUser: true,
+            password: hashedpassword,
+            confirm_password: hashedconfirmpassword,
+          },
+          {
+            new: true,
+          }
+        );
+        const findWallet = await wallet.findOne({ _id: updatedData._id });
+        if (!findWallet) {
+          await wallet.create({
+            ownerId: updatedData._id,
           });
+        }
+        return res
+          .status(200)
+          .json({ message: "new account created sucessfully" });
       }
-      await user
-        .create({
-          name: fname,
-          email: email,
-          isUser: true,
-          EmailToken: crypto.randomBytes(64).toString("hex"),
-          password: hashedpassword,
-          confirm_password: hashedconfirmpassword,
-        })
-        .then(() => {
-          return res
-            .status(200)
-            .json({ message: "new account created sucessfully" });
-        })
-        .catch((e) => {
-          return res.status(500);
+      const userdata = await user.create({
+        name: fname,
+        email: email,
+        isUser: true,
+        EmailToken: crypto.randomBytes(64).toString("hex"),
+        password: hashedpassword,
+        confirm_password: hashedconfirmpassword,
+      });
+      const findWallet = await wallet.findOne({ _id: userdata._id });
+      if (!findWallet) {
+        await wallet.create({
+          ownerId: userdata._id,
         });
+      }
+      return res
+        .status(200)
+        .json({ message: "new account created sucessfully" });
     }
   } catch (error) {
     console.log(error.message);
@@ -88,7 +95,6 @@ const login = async (req, res) => {
     if (!isPasswordCorrect) {
       return res.json({ status: "incorrect password" });
     }
-    console.log(findUser, "find user ");
     if (findUser.status === true && isPasswordCorrect) {
       const toke = jwt.sign(
         { id: findUser._id, role: "user" },
@@ -170,10 +176,12 @@ const verifyLink = async (req, res) => {
 };
 const carList = async (req, res) => {
   try {
-      const findCar = await Car.find({LocationStatus:'on'}).populate("userId");
-      console.log(findCar,'this find car');
-      res.status(200).json(findCar);
-   
+    const findCar = await Car.find({
+      LocationStatus: "on",
+      RideStatus: "not booked",
+    }).populate("userId");
+    console.log(findCar, "this find car");
+    res.status(200).json(findCar);
   } catch (error) {
     console.log(error.message);
     res.status(500);
@@ -181,79 +189,92 @@ const carList = async (req, res) => {
 };
 const bookCar = async (req, res) => {
   try {
+
     const { pickup, dropOff, driver, distance, date, userid, Rate, time } =
       req.body;
+
+      const findCar = await Car.findOne({userId:driver,RideStatus:"booked"})
+      if(findCar){ 
+       return res.status(200).json({message:'car is not available'})
+      }
+
     const otp = Math.floor(500000 + Math.random() * 5000000);
-    const findCheckout = await booking.findOne({
-      driver: driver._id,
-      bookingStatus: "Pending",
+    const bookingRide = await booking.create({
+      driver: driver,
+      date: date,
+      time: time,
+      location: {
+        pickup: pickup,
+        dropoff: dropOff,
+        distance: distance,
+      },
+      verficationCode: otp,
+      passenger: userid,
+      payment: {
+        amount: Rate,
+        status: true,
+      },
     });
-    const perSeat = Rate / 4;
-    if (!findCheckout) {
-      const findChekout = await booking.create({
-        driver: driver._id,
-        date: date,
-        time: time,
-        location: {
-          pickup: pickup,
-          dropoff: dropOff,
-          distance: distance,
-        },
-        verficationCode: otp,
-        bookingStatus: "Pending",
-        passengers: [
-          {
-            user: userid,
-            advancePayment: {
-              status: true,
-              amount: perSeat,
-            },
-            totalPayment: {
-              amount: Rate,
-            },
-          },
-        ],
-      });
-      const updateCar = await Car.findOneAndUpdate(
-        { userId: driver._id },
-        { $set: { RideStatus: "booked" } }
-      );
-      res.status(200).json(findChekout);
-    } else {
-      const updatedBooking = await booking.findOneAndUpdate(
-        { driver: driver._id },
-        {
-          $push: {
-            passengers: {
-              user: userid,
-              advancePayment: {
-                status: true,
-                amount: perSeat,
-              },
-              totalPayment: {
-                amount: Rate,
-              },
-            },
+    let findBooking = await booking
+      .findOne({ _id: bookingRide._id })
+      .populate("driver");
+    const findAmin = await user.findOne({ isAdmin: true });
+    const walletUpdate = await wallet.findOneAndUpdate(
+      { ownerId: findAmin._id },
+      {
+        $inc: { currentBalance: Rate },
+        $push: {
+          transactions: {
+            payee: userid,
+            amount: Rate,
+            recever: findAmin._id,
+            Date: date,
+            Status: true,
           },
         },
-        { new: true }
-      );
-      const updateCar = await Car.findOneAndUpdate(
-        { userId: driver._id },
-        { $set: { RideStatus: "booked" } }
-      );
-      console.log(updatedBooking, "thisssss updated booking");
-      res.status(200).json(updatedBooking);
-    }
+      }
+    );
+    await wallet.findOneAndUpdate(
+      { ownerId: userid },
+      {
+        $push: {
+          transactions: {
+            payee: userid,
+            amount: Rate,
+            recever: findAmin._id,
+            Date: date,
+            Status: true,
+          },
+        },
+      }
+    );
+    await Car.updateOne(
+      { userId: driver },
+      {
+        $set: { RideStatus: "booked" },
+      }
+    );
+    
+    return res.status(200).json(findBooking);
   } catch (error) {
-    console.log(error.message);
+    console.log(error.message, "message");
     res.status(500);
   }
 };
+const carFind = async (req,res)=>{
+  try {
+  const {id} = req.query
+    const  findcar = await Car.findOne({userId:id})
+    res.status(200).json(findcar)
+  } catch (error) {
+    console.log(error.message);
+  }
+}
 module.exports = {
   signup,
   login,
   verifyLink,
   carList,
   bookCar,
+  carFind
 };

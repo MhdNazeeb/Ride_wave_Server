@@ -28,39 +28,16 @@ const tripSchema = new mongoose.Schema(
     },
     bookingStatus: { type: String, default: "Pending", required: true },
     verficationCode: { type: Number, default: 0, required: true },
-
-    passengers: [
-      {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "user",
-        },
-        advancePayment: {
-          status: {
-            type: Boolean,
-            default: false,
-          },
-          amount:{
-            type:Number,
-            default:0
-          }
-        },
-        totalPayment: {
-          status: {
-            type: Boolean,
-            default: false,
-          },
-          refund:{
-            type:Number,
-        },
-        amount:{
-            type:Number,
-        }
-        
-        },
-       
-      },
-    ],
+    passenger:{
+       type:mongoose.Schema.Types.ObjectId,
+       ref:"user",
+       required:true
+    },
+    payment: {
+      amount: { type: Number, default: 0, required: true },
+      status: { type: Boolean, default: false, required: true },
+      refund: { type: Boolean, default: false },
+    },
   },
 
   { timestamps: true }

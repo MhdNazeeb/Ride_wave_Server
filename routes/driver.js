@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
- const {signup,login, carRegister,profile,getProfile,getCar,editCar,driverLocation,car}=require('../controller/driver/driver')
+const {signup,login, carRegister,profile,getProfile,getCar,editCar,driverLocation,car}=require('../controller/driver/driver')
  const {verifyTokenDriver}= require('../middlewares/auth')
 /* GET driver listing. */
 

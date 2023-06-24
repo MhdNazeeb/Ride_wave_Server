@@ -4,6 +4,7 @@ const cloudinary = require("../../utils/Cloudinary");
 const user = require("../../models/user");
 const Car = require("../../models/car");
 const jwt = require("jsonwebtoken");
+const  wallet = require('../../models/Wallet')
 const { query } = require("express");
 
 const signup = async (req, res) => {
@@ -25,7 +26,7 @@ const signup = async (req, res) => {
       });
       if (findUser && !findUser.isDriver) {
         console.log("this user");
-        await user.findOneAndUpdate(
+       const updatedDriver = await user.findOneAndUpdate(
           { email: email },
           {
             name: fname,
@@ -36,10 +37,16 @@ const signup = async (req, res) => {
             DriverStatus: true,
           }
         );
+        const findWallet = await wallet.findOne({_id:updatedDriver._id})
+        if (!findWallet) {
+          await wallet.create({
+            ownerId :updatedDriver._id
+          }) 
+        }
         return res.json({ message: "new account created sucessfully" });
       }
 
-      await user
+       const driverData = await user
         .create({
           name: fname,
           email: email,
@@ -49,13 +56,13 @@ const signup = async (req, res) => {
           isDriver: true,
           DriverStatus: true,
         })
-        .then(() => {
-          res.status(200).json({ message: "new account created sucessfully" });
-        })
-        .catch((error) => {
-          console.log(error.message, "server erro");
-          res.json({ message: "something wrong" });
-        });
+        const findWallet = await wallet.findOne({_id:driverData._id})
+        if (!findWallet) {
+          await wallet.create({
+            ownerId :driverData._id
+          }) 
+        }
+          return res.status(200).json({ message: "new account created sucessfully" });
     }
   } catch (error) {
     console.log(error.message, "this server error");

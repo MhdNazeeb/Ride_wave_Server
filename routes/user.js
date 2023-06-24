@@ -1,7 +1,7 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const {verifyTokenClient }=require('../middlewares/auth')
-const {signup,login,verifyLink,carList,bookCar}=require('../controller/user/user');
+const {signup,login,verifyLink,carList,bookCar,carFind}=require('../controller/user/user');
 
 
 
@@ -11,6 +11,8 @@ router.post('/login',login)
 router.get('/verify',verifyLink)
 router.get('/carlist',carList)
 router.post('/book',verifyTokenClient,bookCar)
+router.get('/car',verifyTokenClient,carFind)
+
 
 
 

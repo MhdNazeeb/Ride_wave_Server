@@ -1,5 +1,5 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const {login,getUsers,blockUser,getDrivers,getDriver,blockDriver,carList,getCar,blockDrivers,verifyCar} = require('../controller/admin/admin')
 /* GET users listing. */
 router.post('/login',login);
