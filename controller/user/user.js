@@ -189,14 +189,13 @@ const carList = async (req, res) => {
 };
 const bookCar = async (req, res) => {
   try {
-
     const { pickup, dropOff, driver, distance, date, userid, Rate, time } =
       req.body;
 
-      const findCar = await Car.findOne({userId:driver,RideStatus:"booked"})
-      if(findCar){ 
-       return res.status(200).json({message:'car is not available'})
-      }
+    const findCar = await Car.findOne({ userId: driver, RideStatus: "booked" });
+    if (findCar) {
+      return res.status(200).json({ message: "car is not available" });
+    }
 
     const otp = Math.floor(500000 + Math.random() * 5000000);
     const bookingRide = await booking.create({
@@ -254,27 +253,70 @@ const bookCar = async (req, res) => {
         $set: { RideStatus: "booked" },
       }
     );
-    
+
     return res.status(200).json(findBooking);
   } catch (error) {
     console.log(error.message, "message");
     res.status(500);
   }
 };
-const carFind = async (req,res)=>{
+const carFind = async (req, res) => {
   try {
-  const {id} = req.query
-    const  findcar = await Car.findOne({userId:id})
-    res.status(200).json(findcar)
+    const { id } = req.query;
+    const findcar = await Car.findOne({ userId: id });
+    res.status(200).json(findcar);
   } catch (error) {
     console.log(error.message);
   }
+};
+const editProfile = async (req, res) => {
+  try {
+    const { name, email, userid } = req.body;
+    const updateProfile = await user.findOneAndUpdate(
+      { _id: userid },
+      {
+        $set: {
+          name: name,
+          email: email,
+        },
+      },
+      { new: true }
+    );
+     res.status(200).json(updateProfile)
+  } catch (error) {
+     res.status(500).json({message:'server error'})
+  }
+};
+const getUser = async (req,res)=>{
+  try {
+    const {id} = req.query
+    const findUser = await user.findById({_id:id})
+    res.status(200).json(findUser)
+  } catch (error) {
+    res.status(500).json({message:'server error'})
+  }
 }
+const findHistory = async (req,res)=>{
+  try {
+    const {userid} = req.query
+    const history = await booking.find({passenger:userid}).populate("driver")
+    console.log(history,'this is history');
+    res.status(200).json(history)
+
+  } catch (error) {
+    res.status(500).json({message:"server error"})
+  }
+
+}
+
 module.exports = {
   signup,
   login,
   verifyLink,
   carList,
   bookCar,
-  carFind
+  carFind,
+  editProfile,
+  getUser,
+  findHistory
 };

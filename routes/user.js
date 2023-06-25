@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {verifyTokenClient }=require('../middlewares/auth')
-const {signup,login,verifyLink,carList,bookCar,carFind}=require('../controller/user/user');
+const {signup,login,verifyLink,carList,bookCar,carFind,editProfile,getUser,findHistory}=require('../controller/user/user');
 
 
 
@@ -12,6 +12,10 @@ router.get('/verify',verifyLink)
 router.get('/carlist',carList)
 router.post('/book',verifyTokenClient,bookCar)
 router.get('/car',verifyTokenClient,carFind)
+router.patch('/user',verifyTokenClient,editProfile)
+router.get('/user',verifyTokenClient,getUser)
+router.get('/history',findHistory)
+
 
 
 
