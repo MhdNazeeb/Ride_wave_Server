@@ -189,9 +189,10 @@ const carList = async (req, res) => {
 };
 const bookCar = async (req, res) => {
   try {
-    const { pickup, dropOff, driver, distance, date, userid, Rate, time } =
+    const currentDate = new Date().toJSON().slice(0, 10)
+    const { pickup, dropOff, driver, distance, userid, rate ,Rate} =
       req.body;
-
+     
     const findCar = await Car.findOne({ userId: driver, RideStatus: "booked" });
     if (findCar) {
       return res.status(200).json({ message: "car is not available" });
@@ -200,8 +201,6 @@ const bookCar = async (req, res) => {
     const otp = Math.floor(500000 + Math.random() * 5000000);
     const bookingRide = await booking.create({
       driver: driver,
-      date: date,
-      time: time,
       location: {
         pickup: pickup,
         dropoff: dropOff,
@@ -210,7 +209,8 @@ const bookCar = async (req, res) => {
       verficationCode: otp,
       passenger: userid,
       payment: {
-        amount: Rate,
+        amount:Rate,
+        aduvance: rate,
         status: true,
       },
     });
@@ -221,13 +221,13 @@ const bookCar = async (req, res) => {
     const walletUpdate = await wallet.findOneAndUpdate(
       { ownerId: findAmin._id },
       {
-        $inc: { currentBalance: Rate },
+        $inc: { currentBalance: rate },
         $push: {
           transactions: {
             payee: userid,
-            amount: Rate,
+            amount: rate,
             recever: findAmin._id,
-            Date: date,
+            Date: currentDate,
             Status: true,
           },
         },
@@ -239,9 +239,9 @@ const bookCar = async (req, res) => {
         $push: {
           transactions: {
             payee: userid,
-            amount: Rate,
+            amount: rate,
             recever: findAmin._id,
-            Date: date,
+            Date: currentDate,
             Status: true,
           },
         },
@@ -250,7 +250,7 @@ const bookCar = async (req, res) => {
     await Car.updateOne(
       { userId: driver },
       {
-        $set: { RideStatus: "booked" },
+        $set: { RideStatus: "booked" ,},
       }
     );
 

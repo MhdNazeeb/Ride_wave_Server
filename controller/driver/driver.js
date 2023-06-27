@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const cloudinary = require("../../utils/Cloudinary");
 const user = require("../../models/user");
 const Car = require("../../models/car");
+const booking = require('../../models/Booking')
 const jwt = require("jsonwebtoken");
 const  wallet = require('../../models/Wallet')
 const { query } = require("express");
@@ -294,6 +295,15 @@ const car = async (req, res) => {
     res.status(500);
   }
 };
+const availableRide = async(req,res)=>{
+  try {
+    const {driverid} = req.query
+    const  findTrip = await booking.findOne({driver:driverid,bookingStatus:'Pending'}).populate('passenger')
+    res.status(200).json(findTrip)
+  } catch (error) {
+    
+  }
+}
 
 module.exports = {
   signup,
@@ -305,4 +315,5 @@ module.exports = {
   editCar,
   driverLocation,
   car,
+  availableRide
 };

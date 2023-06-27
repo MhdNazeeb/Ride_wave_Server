@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const tripSchema = new mongoose.Schema(
   {
@@ -7,16 +7,8 @@ const tripSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-    date: {
-      type: String,
-      required: true,
-    },
     rating: {
       type: Number,
-    },
-    time: {
-      type: String,
-      required: true,
     },
     emergency: {
       type: String,
@@ -28,13 +20,14 @@ const tripSchema = new mongoose.Schema(
     },
     bookingStatus: { type: String, default: "Pending", required: true },
     verficationCode: { type: Number, default: 0, required: true },
-    passenger:{
-       type:mongoose.Schema.Types.ObjectId,
-       ref:"user",
-       required:true
+    passenger: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
     },
     payment: {
       amount: { type: Number, default: 0, required: true },
+      aduvance: { type: Number, default: 0, required: true },
       status: { type: Boolean, default: false, required: true },
       refund: { type: Boolean, default: false },
     },

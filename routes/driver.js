@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const {signup,login, carRegister,profile,getProfile,getCar,editCar,driverLocation,car}=require('../controller/driver/driver')
- const {verifyTokenDriver}= require('../middlewares/auth')
+const {signup,login, carRegister,profile,getProfile,getCar,editCar,driverLocation,car,availableRide}=require('../controller/driver/driver')
+ const {verifyTokenDriver}= require('../middlewares/auth');
 /* GET driver listing. */
 
  router.post('/signup',signup)
@@ -13,6 +13,7 @@ const {signup,login, carRegister,profile,getProfile,getCar,editCar,driverLocatio
  router.patch('/car',verifyTokenDriver,editCar)
  router.get('/Carfound',car)
  router.post('/location',verifyTokenDriver,driverLocation)
+ router.get('/ride',verifyTokenDriver,availableRide)
 
 
 module.exports = router;
