@@ -179,6 +179,7 @@ const carList = async (req, res) => {
     const findCar = await Car.find({
       LocationStatus: "on",
       RideStatus: "not booked",
+      carVerify:'verified'
     }).populate("userId");
     console.log(findCar, "this find car");
     res.status(200).json(findCar);
@@ -299,7 +300,7 @@ const getUser = async (req,res)=>{
 const findHistory = async (req,res)=>{
   try {
     const {userid} = req.query
-    const history = await booking.find({passenger:userid}).populate("driver")
+    const history = await booking.find({passenger:userid}).populate("driver").sort({_id:-1})
     console.log(history,'this is history');
     res.status(200).json(history)
 

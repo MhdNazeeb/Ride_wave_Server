@@ -3,9 +3,9 @@ const bcrypt = require("bcrypt");
 const cloudinary = require("../../utils/Cloudinary");
 const user = require("../../models/user");
 const Car = require("../../models/car");
-const booking = require('../../models/Booking')
+const booking = require("../../models/Booking");
 const jwt = require("jsonwebtoken");
-const  wallet = require('../../models/Wallet')
+const wallet = require("../../models/Wallet");
 const { query } = require("express");
 
 const signup = async (req, res) => {
@@ -27,7 +27,7 @@ const signup = async (req, res) => {
       });
       if (findUser && !findUser.isDriver) {
         console.log("this user");
-       const updatedDriver = await user.findOneAndUpdate(
+        const updatedDriver = await user.findOneAndUpdate(
           { email: email },
           {
             name: fname,
@@ -38,32 +38,33 @@ const signup = async (req, res) => {
             DriverStatus: true,
           }
         );
-        const findWallet = await wallet.findOne({_id:updatedDriver._id})
+        const findWallet = await wallet.findOne({ _id: updatedDriver._id });
         if (!findWallet) {
           await wallet.create({
-            ownerId :updatedDriver._id
-          }) 
+            ownerId: updatedDriver._id,
+          });
         }
         return res.json({ message: "new account created sucessfully" });
       }
 
-       const driverData = await user
-        .create({
-          name: fname,
-          email: email,
-          password: hashedpassword,
-          confirm_password: hashedconfirmpassword,
-          license: file.secure_url,
-          isDriver: true,
-          DriverStatus: true,
-        })
-        const findWallet = await wallet.findOne({_id:driverData._id})
-        if (!findWallet) {
-          await wallet.create({
-            ownerId :driverData._id
-          }) 
-        }
-          return res.status(200).json({ message: "new account created sucessfully" });
+      const driverData = await user.create({
+        name: fname,
+        email: email,
+        password: hashedpassword,
+        confirm_password: hashedconfirmpassword,
+        license: file.secure_url,
+        isDriver: true,
+        DriverStatus: true,
+      });
+      const findWallet = await wallet.findOne({ _id: driverData._id });
+      if (!findWallet) {
+        await wallet.create({
+          ownerId: driverData._id,
+        });
+      }
+      return res
+        .status(200)
+        .json({ message: "new account created sucessfully" });
     }
   } catch (error) {
     console.log(error.message, "this server error");
@@ -289,19 +290,116 @@ const car = async (req, res) => {
   try {
     const { driverid } = req.query;
     const findcar = await Car.findOne({ userId: driverid });
-    res.status(200).json(findcar)
+    res.status(200).json(findcar);
     res.status(200);
   } catch (error) {
     res.status(500);
   }
 };
-const availableRide = async(req,res)=>{
+const availableRide = async (req, res) => {
   try {
-    const {driverid} = req.query
-    const  findTrip = await booking.findOne({driver:driverid,bookingStatus:'Pending'}).populate('passenger')
-    res.status(200).json(findTrip)
+    const { driverid } = req.query;
+    const findTrip = await booking
+      .findOne({ driver: driverid, bookingStatus: "Pending" })
+      .populate("passenger");
+    console.log(findTrip, "this is trip");
+    res.status(200).json(findTrip);
   } catch (error) {
-    
+
+  }
+};
+const rjectRide = async (req, res) => {
+  try {
+    const { tripid, driverid,status } = req.body;
+    if(status==='reject'){
+    const currentDate = new Date().toJSON().slice(0, 10);
+    const updateStatus = await booking
+      .findOneAndUpdate(
+        { _id: tripid },
+        { $set: { bookingStatus: "rejected" } },
+        { new: true }
+      )
+      .populate("passenger");
+    const updatedcar = await Car.updateOne(
+      { userId: driverid },
+      { $set: { RideStatus: "not booked" } }
+    );
+
+    const aduvance = updateStatus.payment.aduvance;
+
+    const passengerid = updateStatus.passenger;
+    const findAmin = await user.findOne({ isAdmin: true });
+    const walletUpdate = await wallet.findOneAndUpdate(
+      { ownerId: passengerid },
+      {
+        $inc: { currentBalance: aduvance },
+        $push: {
+          transactions: {
+            payee: findAmin._id,
+            amount: aduvance,
+            recever: passengerid,
+            Date: currentDate,
+            Status: true,
+          },
+        },
+      },
+
+      { new: true }
+    );
+    const adminwalllet = await wallet.findOneAndUpdate(
+      { ownerId: findAmin._id },
+      {
+        $inc: { currentBalance: -aduvance },
+        $push: {
+          transactions: {
+            payee: findAmin._id,
+            amount: aduvance,
+            recever: passengerid,
+            Date: currentDate,
+            Status: true,
+          },
+        },
+      },
+
+      { new: true }
+    );
+
+    res.status(201).json({updateStatus,message:'rejected'});
+    }else{
+      
+      const updateStatus = await booking
+      .findOneAndUpdate(
+        { _id: tripid },
+        { $set: { bookingStatus: "confirmed",Arraivalstatus:'way' } },
+        { new: true }
+      ).populate("passenger");
+      res.status(200).json({updateStatus,message:'confirmed'})
+    }
+
+  } catch (error) {
+    console.log(error.message, "error");
+    res.status(500);
+  }
+};
+const getTrip = async (req, res) => {
+  try {
+    const { driverid } = req.query;
+    const findTrip = await booking
+      .findOne({ driver: driverid, bookingStatus: "Pending" })
+      .populate("passenger");
+
+    res.status(200).json(findTrip);
+  } catch (error) {
+    res.status(500);
+  }
+};
+const findTrip = async(req,res)=>{
+  try {
+    const {tripid}=req.query
+    const findtrip = await booking.findOne({_id:tripid}).populate('passenger')
+    res.status(200).json(findtrip)
+  } catch (error) {
+    res.status(500)
   }
 }
 
@@ -315,5 +413,8 @@ module.exports = {
   editCar,
   driverLocation,
   car,
-  availableRide
+  availableRide,
+  rjectRide,
+  getTrip,
+  findTrip
 };
