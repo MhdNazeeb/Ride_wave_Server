@@ -19,7 +19,6 @@ const tripSchema = new mongoose.Schema(
       distance: { type: Number, required: true },
     },
     bookingStatus: { type: String, default: "Pending", required: true },
-    Arraivalstatus: { type: String, default: "Pending", required: true },
     Reachedpickup: { type: String, default: "Pending", required: true },
     StartedToDestination: { type: String, default: "Pending", required: true },
     ReachedDestination: { type: String, default: "Pending", required: true },

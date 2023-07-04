@@ -300,82 +300,79 @@ const availableRide = async (req, res) => {
   try {
     const { driverid } = req.query;
     const findTrip = await booking
-      .findOne({ driver: driverid, bookingStatus: "Pending" })
-      .populate("passenger");
-    console.log(findTrip, "this is trip");
+      .find({ driver: driverid })
+      .populate("passenger")
+      .sort({ _id: -1 });
     res.status(200).json(findTrip);
-  } catch (error) {
-
-  }
+  } catch (error) {}
 };
 const rjectRide = async (req, res) => {
   try {
-    const { tripid, driverid,status } = req.body;
-    if(status==='reject'){
-    const currentDate = new Date().toJSON().slice(0, 10);
-    const updateStatus = await booking
-      .findOneAndUpdate(
-        { _id: tripid },
-        { $set: { bookingStatus: "rejected" } },
-        { new: true }
-      )
-      .populate("passenger");
-    const updatedcar = await Car.updateOne(
-      { userId: driverid },
-      { $set: { RideStatus: "not booked" } }
-    );
-
-    const aduvance = updateStatus.payment.aduvance;
-
-    const passengerid = updateStatus.passenger;
-    const findAmin = await user.findOne({ isAdmin: true });
-    const walletUpdate = await wallet.findOneAndUpdate(
-      { ownerId: passengerid },
-      {
-        $inc: { currentBalance: aduvance },
-        $push: {
-          transactions: {
-            payee: findAmin._id,
-            amount: aduvance,
-            recever: passengerid,
-            Date: currentDate,
-            Status: true,
-          },
-        },
-      },
-
-      { new: true }
-    );
-    const adminwalllet = await wallet.findOneAndUpdate(
-      { ownerId: findAmin._id },
-      {
-        $inc: { currentBalance: -aduvance },
-        $push: {
-          transactions: {
-            payee: findAmin._id,
-            amount: aduvance,
-            recever: passengerid,
-            Date: currentDate,
-            Status: true,
-          },
-        },
-      },
-
-      { new: true }
-    );
-
-    res.status(201).json({updateStatus,message:'rejected'});
-    }else{
-      
+    const { tripid, driverid, status } = req.body;
+    if (status === "reject") {
+      const currentDate = new Date().toJSON().slice(0, 10);
       const updateStatus = await booking
-      .findOneAndUpdate(
-        { _id: tripid },
-        { $set: { bookingStatus: "confirmed",Arraivalstatus:'way' } },
-        { new: true }
-      ).populate("passenger");
-      res.status(200).json({updateStatus,message:'confirmed'})
-    }
+        .findOneAndUpdate(
+          { _id: tripid },
+          { $set: { bookingStatus: "rejected" } },
+          { new: true }
+        )
+        .populate("passenger");
+      const updatedcar = await Car.updateOne(
+        { userId: driverid },
+        { $set: { RideStatus: "not booked" } }
+      );
 
+      const aduvance = updateStatus.payment.aduvance;
+
+      const passengerid = updateStatus.passenger;
+      const findAmin = await user.findOne({ isAdmin: true });
+      const walletUpdate = await wallet.findOneAndUpdate(
+        { ownerId: passengerid },
+        {
+          $inc: { currentBalance: aduvance },
+          $push: {
+            transactions: {
+              payee: findAmin._id,
+              amount: aduvance,
+              recever: passengerid,
+              Date: currentDate,
+              Status: true,
+            },
+          },
+        },
+
+        { new: true }
+      );
+      const adminwalllet = await wallet.findOneAndUpdate(
+        { ownerId: findAmin._id },
+        {
+          $inc: { currentBalance: -aduvance },
+          $push: {
+            transactions: {
+              payee: findAmin._id,
+              amount: aduvance,
+              recever: passengerid,
+              Date: currentDate,
+              Status: true,
+            },
+          },
+        },
+
+        { new: true }
+      );
+
+      res.status(201).json({ updateStatus, message: "rejected" });
+    } else {
+      const updateStatus = await booking
+        .findOneAndUpdate(
+          { _id: tripid },
+          { $set: { bookingStatus: "confirmed", Reachedpickup: "way" } },
+          { new: true }
+        )
+        .populate("passenger");
+      res.status(200).json({ updateStatus, message: "confirmed" });
+    }
   } catch (error) {
     console.log(error.message, "error");
     res.status(500);
@@ -393,12 +390,44 @@ const getTrip = async (req, res) => {
     res.status(500);
   }
 };
-const findTrip = async(req,res)=>{
+const findTrip = async (req, res) => {
   try {
-    const {tripid}=req.query
-    const findtrip = await booking.findOne({_id:tripid}).populate('passenger')
-    res.status(200).json(findtrip)
+    const { tripid } = req.query;
+
+    const findtrip = await booking
+      .findOne({ _id: tripid })
+      .populate("passenger");
+    res.status(200).json(findtrip);
   } catch (error) {
+    res.status(500);
+  }
+};
+
+const destination  = async (req,res)=>{
+  try {
+    const {tripid,otp} =req.body
+    const confirmOtp=await booking.findOne({verficationCode:otp})
+    if(!confirmOtp){
+      return res.status(200).json({message:"otp incorrect"})
+    }else{
+      await booking.updateOne({_id:tripid},{$set:{StartedToDestination:'confirmed',Reachedpickup:'confirmed'}})
+      res.status(200).json({message:"otp successful"})
+    }
+  
+  } catch (error) {
+    console.log(error.message);
+    res.status(500)
+  }
+}
+const tripComleted = async (req,res)=>{
+  try {
+    const {tripid}=req.body
+
+   const finddriver = await booking.findOneAndUpdate({_id:tripid},{$set:{ReachedDestination:'confirmed'}},{new:true})
+    await Car.updateOne({driver:finddriver.driver},{$set:{RideStatus:'not booked'}})
+     res.status(200).json({message:'Ride completed'})
+  } catch (error) {
+    console.log(error.message);
     res.status(500)
   }
 }
@@ -416,5 +445,7 @@ module.exports = {
   availableRide,
   rjectRide,
   getTrip,
-  findTrip
+  findTrip,
+  destination,
+  tripComleted
 };

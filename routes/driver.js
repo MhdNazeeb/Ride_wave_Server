@@ -13,7 +13,9 @@ const {
   availableRide,
   rjectRide,
   getTrip,
-  findTrip
+  findTrip,
+  destination,
+  tripComleted
 } = require("../controller/driver/driver");
 const { verifyTokenDriver } = require("../middlewares/auth");
 /* GET driver listing. */
@@ -31,5 +33,7 @@ router.get("/ride", verifyTokenDriver, availableRide);
 router.post("/ride", verifyTokenDriver, rjectRide);
 router.get("/trip", verifyTokenDriver, getTrip);
 router.get("/trip_status", findTrip);
+router.post("/trip_status",verifyTokenDriver,destination);
+router.post("/trip__status",verifyTokenDriver,tripComleted);
 
 module.exports = router;
