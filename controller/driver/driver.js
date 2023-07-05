@@ -424,7 +424,8 @@ const tripComleted = async (req,res)=>{
     const {tripid}=req.body
 
    const finddriver = await booking.findOneAndUpdate({_id:tripid},{$set:{ReachedDestination:'confirmed'}},{new:true})
-    await Car.updateOne({driver:finddriver.driver},{$set:{RideStatus:'not booked'}})
+   console.log(finddriver,'this is driver');
+    await Car.updateOne({userId:finddriver.driver},{$set:{RideStatus:'not booked'}})
      res.status(200).json({message:'Ride completed'})
   } catch (error) {
     console.log(error.message);

@@ -310,6 +310,17 @@ const findHistory = async (req,res)=>{
 
 }
 
+const cancelTrip = async (req,res)=>{
+  try {
+    const {tripid} = req.body
+     const cancelUpdate = await booking.findOneAndUpdate({_id:tripid},{$set:{bookingStatus:"Cancelled"}},{new:true})
+     const cancelled=await Car.findOneAndUpdate({userId:cancelUpdate.driver},{$set:{RideStatus:'not booked'}},{new:true})
+     res.status(200).json({message:"canceled",cancelUpdate})
+   } catch (error) {
+    console.log(error.message,'thiss is message');
+  }
+}
+
 module.exports = {
   signup,
   login,
@@ -319,5 +330,6 @@ module.exports = {
   carFind,
   editProfile,
   getUser,
-  findHistory
+  findHistory,
+  cancelTrip
 };
