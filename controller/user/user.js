@@ -312,12 +312,22 @@ const findHistory = async (req,res)=>{
 
 const cancelTrip = async (req,res)=>{
   try {
-    const {tripid} = req.body
+     const {tripid} = req.body
      const cancelUpdate = await booking.findOneAndUpdate({_id:tripid},{$set:{bookingStatus:"Cancelled"}},{new:true})
      const cancelled=await Car.findOneAndUpdate({userId:cancelUpdate.driver},{$set:{RideStatus:'not booked'}},{new:true})
      res.status(200).json({message:"canceled",cancelUpdate})
    } catch (error) {
     console.log(error.message,'thiss is message');
+  }
+}
+const findTrip = async (req,res)=>{
+  try {
+    const {tripid}=req.query
+   const trip = await booking.findOne({_id:tripid})
+   console.log(trip,'this is tripid');
+   res.status(200).json(trip)
+  } catch (error) {
+    
   }
 }
 
@@ -331,5 +341,6 @@ module.exports = {
   editProfile,
   getUser,
   findHistory,
-  cancelTrip
+  cancelTrip,
+  findTrip
 };

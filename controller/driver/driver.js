@@ -304,7 +304,9 @@ const availableRide = async (req, res) => {
       .populate("passenger")
       .sort({ _id: -1 });
     res.status(200).json(findTrip);
-  } catch (error) {}
+  } catch (error) {
+
+  }
 };
 const rjectRide = async (req, res) => {
   try {
@@ -428,7 +430,7 @@ const tripComleted = async (req,res)=>{
     await Car.updateOne({userId:finddriver.driver},{$set:{RideStatus:'not booked'}})
      res.status(200).json({message:'Ride completed'})
   } catch (error) {
-    console.log(error.message);
+    console.log(error.message)
     res.status(500)
   }
 }
