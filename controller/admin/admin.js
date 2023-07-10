@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const user = require("../../models/user");
 const jwt = require("jsonwebtoken");
 const Car = require("../../models/car");
+const booking = require('../../models/Booking')
 
 const login = async (req, res) => {
   try {
@@ -22,7 +23,7 @@ const login = async (req, res) => {
       if (findAdmin.isAdmin === true && isPasswordCorrect) {
         const toke = jwt.sign(
           { id: findAdmin._id, role: "admin" },
-          "ClientTokenSecret",
+          "admin_secret",
           { expiresIn: "5h" }
         );
         res
@@ -175,6 +176,15 @@ const verifyCar = async (req, res) => {
     res.status(500)
   }
 };
+const tripDetails = async (req,res)=>{
+  try {
+    const {id} = req.query
+   const findtrip = await booking.findOne({_id:id}).populate('driver')
+   res.status(200).json(findtrip)
+  } catch (error) {
+    res.status(500).json({message:'something went wrong'})
+  }
+}
 module.exports = {
   login,
   getUsers,
@@ -186,4 +196,5 @@ module.exports = {
   getCar,
   blockDrivers,
   verifyCar,
+  tripDetails
 };

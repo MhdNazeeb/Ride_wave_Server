@@ -179,7 +179,7 @@ const carList = async (req, res) => {
     const findCar = await Car.find({
       LocationStatus: "on",
       RideStatus: "not booked",
-      carVerify:'verified'
+      carVerify: "verified",
     }).populate("userId");
     console.log(findCar, "this find car");
     res.status(200).json(findCar);
@@ -190,10 +190,9 @@ const carList = async (req, res) => {
 };
 const bookCar = async (req, res) => {
   try {
-    const currentDate = new Date().toJSON().slice(0, 10)
-    const { pickup, dropOff, driver, distance, userid, rate ,Rate} =
-      req.body;
-     
+    const currentDate = new Date().toJSON().slice(0, 10);
+    const { pickup, dropOff, driver, distance, userid, rate, Rate } = req.body;
+
     const findCar = await Car.findOne({ userId: driver, RideStatus: "booked" });
     if (findCar) {
       return res.status(200).json({ message: "car is not available" });
@@ -210,9 +209,8 @@ const bookCar = async (req, res) => {
       verficationCode: otp,
       passenger: userid,
       payment: {
-        amount:Rate,
+        amount: Rate,
         aduvance: rate,
-        status: true,
       },
     });
     let findBooking = await booking
@@ -251,7 +249,7 @@ const bookCar = async (req, res) => {
     await Car.updateOne(
       { userId: driver },
       {
-        $set: { RideStatus: "booked" ,},
+        $set: { RideStatus: "booked" },
       }
     );
 
@@ -283,53 +281,104 @@ const editProfile = async (req, res) => {
       },
       { new: true }
     );
-     res.status(200).json(updateProfile)
+    res.status(200).json(updateProfile);
   } catch (error) {
-     res.status(500).json({message:'server error'})
+    res.status(500).json({ message: "server error" });
   }
 };
-const getUser = async (req,res)=>{
+const getUser = async (req, res) => {
   try {
-    const {id} = req.query
-    const findUser = await user.findById({_id:id})
-    res.status(200).json(findUser)
+    const { id } = req.query;
+    const findUser = await user.findById({ _id: id });
+    res.status(200).json(findUser);
   } catch (error) {
-    res.status(500).json({message:'server error'})
+    res.status(500).json({ message: "server error" });
   }
-}
-const findHistory = async (req,res)=>{
+};
+const findHistory = async (req, res) => {
   try {
-    const {userid} = req.query
-    const history = await booking.find({passenger:userid}).populate("driver").sort({_id:-1})
-    console.log(history,'this is history');
-    res.status(200).json(history)
-
+    const { userid } = req.query;
+    const history = await booking
+      .find({ passenger: userid })
+      .populate("driver")
+      .sort({ _id: -1 });
+    console.log(history, "this is history");
+    res.status(200).json(history);
   } catch (error) {
-    res.status(500).json({message:"server error"})
+    res.status(500).json({ message: "server error" });
   }
+};
 
-}
-
-const cancelTrip = async (req,res)=>{
+const cancelTrip = async (req, res) => {
   try {
-     const {tripid} = req.body
-     const cancelUpdate = await booking.findOneAndUpdate({_id:tripid},{$set:{bookingStatus:"Cancelled"}},{new:true})
-     const cancelled=await Car.findOneAndUpdate({userId:cancelUpdate.driver},{$set:{RideStatus:'not booked'}},{new:true})
-     res.status(200).json({message:"canceled",cancelUpdate})
-   } catch (error) {
-    console.log(error.message,'thiss is message');
-  }
-}
-const findTrip = async (req,res)=>{
-  try {
-    const {tripid}=req.query
-   const trip = await booking.findOne({_id:tripid})
-   console.log(trip,'this is tripid');
-   res.status(200).json(trip)
+    const { tripid } = req.body;
+    const cancelUpdate = await booking.findOneAndUpdate(
+      { _id: tripid },
+      { $set: { bookingStatus: "Cancelled" } },
+      { new: true }
+    );
+    const cancelled = await Car.findOneAndUpdate(
+      { userId: cancelUpdate.driver },
+      { $set: { RideStatus: "not booked" } },
+      { new: true }
+    );
+    res.status(200).json({ message: "canceled", cancelUpdate });
   } catch (error) {
-    
+    console.log(error.message, "thiss is message");
   }
-}
+};
+const findTrip = async (req, res) => {
+  try {
+    const { tripid } = req.query;
+    const trip = await booking.findOne({ _id: tripid });
+    console.log(trip, "this is tripid");
+    res.status(200).json(trip);
+  } catch (error) {}
+};
+const payment = async (req, res) => {
+  try {
+    const { tripid, pay } = req.body;
+    const currentDate = new Date().toJSON().slice(0, 10);
+    const paymentUpdate = await booking.findOneAndUpdate(
+      { _id: tripid },
+      {
+        $set: { "payment.status": true },
+      }
+    );
+    const UpdateDriverWallet = await wallet.findOneAndUpdate(
+      { ownerId: paymentUpdate.driver },
+      {
+        $inc: { currentBalance: pay },
+        $push: {
+          transactions: {
+            payee: paymentUpdate.passenger,
+            amount: pay,
+            recever: paymentUpdate.driver,
+            Date: currentDate,
+            Status: true,
+          },
+        },
+      }
+    );
+    const UpdateUserWallet = await wallet.findOneAndUpdate(
+      { ownerId: paymentUpdate.passenger },
+      {
+        $push: {
+          transactions: {
+            payee: paymentUpdate.passenger,
+            amount: pay,
+            recever: paymentUpdate.driver,
+            Date: currentDate,
+            Status: true,
+          },
+        },
+      }
+    );
+    res.status(200).json({message:"success"})
+  } catch (error) {
+    res.status(500).json({ message: "somthing went wrong" });
+  }
+};
 
 module.exports = {
   signup,
@@ -342,5 +391,6 @@ module.exports = {
   getUser,
   findHistory,
   cancelTrip,
-  findTrip
+  findTrip,
+  payment,
 };

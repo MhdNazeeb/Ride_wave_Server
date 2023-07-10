@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const {login,getUsers,blockUser,getDrivers,getDriver,blockDriver,carList,getCar,blockDrivers,verifyCar} = require('../controller/admin/admin')
+const {login,getUsers,blockUser,getDrivers,getDriver,blockDriver,carList,getCar,blockDrivers,verifyCar,tripDetails} = require('../controller/admin/admin');
+const { verifyTokenAdmin } = require('../middlewares/auth');
 /* GET users listing. */
 router.post('/login',login);
 router.get('/users',getUsers)
@@ -12,5 +13,6 @@ router.get('/carlist',carList)
 router.get('/car',getCar)
 router.patch('/drivers',blockDrivers)
 router.patch('/car',verifyCar)
+router.get('/trip_find',verifyTokenAdmin,tripDetails)
 
 module.exports = router;

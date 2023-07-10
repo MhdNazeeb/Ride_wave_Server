@@ -12,7 +12,8 @@ const {
   getUser,
   findHistory,
   cancelTrip,
-  findTrip
+  findTrip,
+  payment
 } = require("../controller/user/user");
 
 /* GET home page. */
@@ -27,5 +28,6 @@ router.get("/user", verifyTokenClient, getUser);
 router.get("/history", findHistory);
 router.post("/cancel_ride", cancelTrip);
 router.get("/trip", findTrip);
+router.post("/payment", verifyTokenClient,payment);
 
 module.exports = router;
