@@ -304,9 +304,7 @@ const availableRide = async (req, res) => {
       .populate("passenger")
       .sort({ _id: -1 });
     res.status(200).json(findTrip);
-  } catch (error) {
-
-  }
+  } catch (error) {}
 };
 const rjectRide = async (req, res) => {
   try {
@@ -405,35 +403,91 @@ const findTrip = async (req, res) => {
   }
 };
 
-const destination  = async (req,res)=>{
+const destination = async (req, res) => {
   try {
-    const {tripid,otp} =req.body
-    const confirmOtp=await booking.findOne({verficationCode:otp})
-    if(!confirmOtp){
-      return res.status(200).json({message:"otp incorrect"})
-    }else{
-      await booking.updateOne({_id:tripid},{$set:{StartedToDestination:'confirmed',Reachedpickup:'confirmed'}})
-      res.status(200).json({message:"otp successful"})
+    const { tripid, otp } = req.body;
+    const confirmOtp = await booking.findOne({ verficationCode: otp });
+    if (!confirmOtp) {
+      return res.status(200).json({ message: "otp incorrect" });
+    } else {
+      await booking.updateOne(
+        { _id: tripid },
+        {
+          $set: {
+            StartedToDestination: "confirmed",
+            Reachedpickup: "confirmed",
+          },
+        }
+      );
+      res.status(200).json({ message: "otp successful" });
     }
-  
   } catch (error) {
     console.log(error.message);
-    res.status(500)
+    res.status(500);
   }
-}
-const tripComleted = async (req,res)=>{
+};
+const tripComleted = async (req, res) => {
   try {
-    const {tripid}=req.body
+    const { tripid } = req.body;
 
-   const finddriver = await booking.findOneAndUpdate({_id:tripid},{$set:{ReachedDestination:'confirmed'}},{new:true})
-   console.log(finddriver,'this is driver');
-    await Car.updateOne({userId:finddriver.driver},{$set:{RideStatus:'not booked'}})
-     res.status(200).json({message:'Ride completed'})
+    const finddriver = await booking.findOneAndUpdate(
+      { _id: tripid },
+      { $set: { ReachedDestination: "confirmed" } },
+      { new: true }
+    );
+    console.log(finddriver, "this is driver");
+    await Car.updateOne(
+      { userId: finddriver.driver },
+      { $set: { RideStatus: "not booked" } }
+    );
+    res.status(200).json({ message: "Ride completed" });
   } catch (error) {
-    console.log(error.message)
-    res.status(500)
+    console.log(error.message);
+    res.status(500);
   }
-}
+};
+const report = async (req, res) => {
+  try {
+    const { driverid } = req.query;
+    const completedRide = await booking
+      .find({
+        ReachedDestination: "confirmed",
+      })
+      .count();
+    const totalride = await booking.find().count();
+    const driverwallet = await wallet
+      .findOne({ ownerId: driverid })
+      .select("currentBalance");
+    let startDate = new Date();
+    const month = startDate.getMonth();
+    startDate = new Date(2023, month, 2);
+    endDate = new Date(2023, month, 29);
+
+    console.log(startDate, endDate, "this is month");
+    const monthlyRport = await booking.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: startDate,
+            $lte: endDate,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalTrips: { $sum: 1 },
+          totalAmount: { $sum: "$payment.amount" },
+        },
+      },
+    ]);
+    console.log(monthlyRport, "this roportttttttttttt");
+
+    res.status(200).json({ totalride, driverwallet, completedRide, monthlyRport});
+  } catch (error) {
+    res.status(500).json({ message: "something went wrong" });
+  }
+};
 
 module.exports = {
   signup,
@@ -450,5 +504,6 @@ module.exports = {
   getTrip,
   findTrip,
   destination,
-  tripComleted
+  tripComleted,
+  report,
 };
