@@ -448,13 +448,11 @@ const tripComleted = async (req, res) => {
 };
 const report = async (req, res) => {
   try {
-    const { driverid } = req.query;
+    const { driverid} = req.query;
     const completedRide = await booking
-      .find({
-        ReachedDestination: "confirmed",
-      })
+      .find({driver:driverid,ReachedDestination: "confirmed",  })
       .count();
-    const totalride = await booking.find().count();
+    const totalride = await booking.find({driver:driverid}).count();
     const driverwallet = await wallet
       .findOne({ ownerId: driverid })
       .select("currentBalance");
@@ -481,7 +479,7 @@ const report = async (req, res) => {
         },
       },
     ]);
-    console.log(monthlyRport, "this roportttttttttttt");
+    
 
     res.status(200).json({ totalride, driverwallet, completedRide, monthlyRport});
   } catch (error) {
