@@ -6,7 +6,9 @@ const Car = require("../../models/car");
 const booking = require("../../models/Booking");
 const jwt = require("jsonwebtoken");
 const wallet = require("../../models/Wallet");
+const { ObjectId } = require("mongodb");
 const { query } = require("express");
+const { default: mongoose } = require("mongoose");
 
 const signup = async (req, res) => {
   try {
@@ -448,41 +450,115 @@ const tripComleted = async (req, res) => {
 };
 const report = async (req, res) => {
   try {
-    const { driverid} = req.query;
+    const { driverid } = req.query;
     const completedRide = await booking
-      .find({driver:driverid,ReachedDestination: "confirmed",  })
+      .find({ driver: driverid, ReachedDestination: "confirmed" })
       .count();
-    const totalride = await booking.find({driver:driverid}).count();
+    const totalride = await booking.find({ driver: driverid }).count();
     const driverwallet = await wallet
       .findOne({ ownerId: driverid })
       .select("currentBalance");
-    let startDate = new Date();
-    const month = startDate.getMonth();
-    startDate = new Date(2023, month, 2);
-    endDate = new Date(2023, month, 29);
-
-    console.log(startDate, endDate, "this is month");
-    const monthlyRport = await booking.aggregate([
+      const rejected = await booking.find({driver: driverid,bookingStatus:"rejected" }).count()
+      const cancelled = await booking.find({driver: driverid,bookingStatus:"Cancelled" }).count()
+    const monthlyEarnings = await booking.aggregate([
       {
         $match: {
-          createdAt: {
-            $gte: startDate,
-            $lte: endDate,
+          $and: [
+            { driver: new mongoose.Types.ObjectId(driverid) },
+            { ReachedDestination: "confirmed" },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
           },
+          amount: { $sum: "$payment.amount" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $addFields: {
+          monthName: {
+            $let: {
+              vars: {
+                monthsInString: [
+                  "",
+                  "January",
+                  "February",
+                  "March",
+                  "April",
+                  "May",
+                  "June",
+                  "July",
+                  "August",
+                  "September",
+                  "October",
+                  "November",
+                  "December",
+                ],
+              },
+              in: {
+                $arrayElemAt: ["$$monthsInString", "$_id.month"],
+              },
+            },
+          },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    console.log(monthlyEarnings, "tttttttttttttttttt");
+    let monthgraph = [];
+    let monthcount = [];
+    let monthname = [];
+    for (i = 0; i < monthlyEarnings.length; i++) {
+      monthgraph.push(monthlyEarnings[i].amount);
+      monthcount.push(monthlyEarnings[i].count);
+      monthname.push(monthlyEarnings[i].monthName);
+    }
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const endOfMonth = new Date();
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1, 0);
+    endOfMonth.setHours(23, 59, 59, 999);
+
+    const monthlyReport = await booking.aggregate([
+      {
+        $match: {
+          $and: [
+            { driver: new mongoose.Types.ObjectId(driverid) },
+            { createdAt: { $gte: startOfMonth, $lte: endOfMonth } },
+            { ReachedDestination: "confirmed" },
+          ],
         },
       },
       {
         $group: {
           _id: null,
-          totalTrips: { $sum: 1 },
-          totalAmount: { $sum: "$payment.amount" },
+          totalEarnings: { $sum: "$payment.amount" },
         },
       },
     ]);
-    
 
-    res.status(200).json({ totalride, driverwallet, completedRide, monthlyRport});
+    const montherning = monthlyReport.length > 0 ? monthlyReport[0].totalEarnings : 0;
+
+    res.status(200).json({
+      totalride,
+      driverwallet,
+      completedRide,
+      monthcount,
+      monthgraph,
+      monthname,
+      montherning,
+      cancelled,
+      rejected
+    });
   } catch (error) {
+    console.log(error.message, "this is message");
     res.status(500).json({ message: "something went wrong" });
   }
 };

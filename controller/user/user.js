@@ -211,6 +211,7 @@ const bookCar = async (req, res) => {
       payment: {
         amount: Rate,
         aduvance: rate,
+        
       },
     });
     let findBooking = await booking
