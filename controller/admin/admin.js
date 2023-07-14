@@ -3,7 +3,8 @@ const bcrypt = require("bcrypt");
 const user = require("../../models/user");
 const jwt = require("jsonwebtoken");
 const Car = require("../../models/car");
-const booking = require('../../models/Booking')
+const booking = require("../../models/Booking");
+const Wallet = require("../../models/Wallet");
 
 const login = async (req, res) => {
   try {
@@ -159,32 +160,143 @@ const verifyCar = async (req, res) => {
       const carVerify = await Car.findOneAndUpdate(
         { _id: id },
         { $set: { carVerify: "verified" } },
-        {new:true}
+        { new: true }
       );
-      res.status(200).json(carVerify)
-    }else{
+      res.status(200).json(carVerify);
+    } else {
       const rejectCar = await Car.findOneAndUpdate(
         { _id: id },
         { $set: { carVerify: "Rejected" } },
-        {new:true}
+        { new: true }
       );
-      res.status(200).json(rejectCar)
+      res.status(200).json(rejectCar);
     }
-    
-    
   } catch (error) {
-    res.status(500)
+    res.status(500);
   }
 };
-const tripDetails = async (req,res)=>{
+const tripDetails = async (req, res) => {
   try {
-    const {id} = req.query
-   const findtrip = await booking.findOne({_id:id}).populate('driver')
-   res.status(200).json(findtrip)
+    const { id } = req.query;
+    const findtrip = await booking.findOne({ _id: id }).populate("driver");
+    res.status(200).json(findtrip);
   } catch (error) {
-    res.status(500).json({message:'something went wrong'})
+    res.status(500).json({ message: "something went wrong" });
   }
-}
+};
+const findTrip = async (req, res) => {
+  try {
+    const FindTrips = await booking.find().populate("driver");
+    res.status(200).json(FindTrips);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+const adminReport = async (req, res) => {
+  try {
+    const { adminid } = req.query;
+    const totaltrip = await booking.find().count();
+    const completedTrip = await booking
+      .find({ ReachedDestination: "confirmed" })
+      .count();
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const endOfMonth = new Date();
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1, 0);
+    endOfMonth.setHours(23, 59, 59, 999);
+    const monthlyReport = await booking.aggregate([
+      {
+        $match: {
+          $and: [
+            { createdAt: { $gte: startOfMonth, $lte: endOfMonth } },
+            { ReachedDestination: "confirmed" },
+          ],
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalEarnings: { $sum: "$payment.aduvance" },
+        },
+      },
+    ]);
+
+    const monthlyEarnings = await booking.aggregate([
+      {
+        $match: {
+          ReachedDestination: "confirmed",
+        },
+      },
+      {
+        $group: {
+          _id: {
+            month: { $month: "$createdAt" },
+          },
+          amount: { $sum: "$payment.aduvance" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $addFields: {
+          monthName: {
+            $let: {
+              vars: {
+                monthsInString: [
+                  "",
+                  "January",
+                  "February",
+                  "March",
+                  "April",
+                  "May",
+                  "June",
+                  "July",
+                  "August",
+                  "September",
+                  "October",
+                  "November",
+                  "December",
+                ],
+              },
+              in: {
+                $arrayElemAt: ["$$monthsInString", "$_id.month"],
+              },
+            },
+          },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    let monthlyEarning = [];
+    let monthName = [];
+    monthlyEarnings.forEach((Element) => {
+      monthlyEarning.push(Element.amount);
+      monthName.push(Element.monthName);
+    });
+    const rejected = await booking.find({bookingStatus:"rejected" }).count()
+    const cancelled = await booking.find({bookingStatus:"Cancelled" }).count()
+    const Pending = await booking.find({bookingStatus:'Pending'}).count()
+     
+    const adminwallet = await Wallet.findOne({ ownerId: adminid });
+    res.status(200).json({
+        monthlyReport,
+        completedTrip,
+        totaltrip,
+        adminwallet,
+        monthName,
+        monthlyEarning,
+        Pending,
+        cancelled,
+        rejected
+      });
+  } catch (error) {
+    console.log(error.message);
+    res.status(200).json(error);
+  }
+};
+
 module.exports = {
   login,
   getUsers,
@@ -196,5 +308,7 @@ module.exports = {
   getCar,
   blockDrivers,
   verifyCar,
-  tripDetails
+  tripDetails,
+  findTrip,
+  adminReport,
 };
