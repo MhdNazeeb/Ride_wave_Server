@@ -18,6 +18,8 @@ app.use(cors(corsOptions))
 const adminRouter = require('./routes/admin');
 const usersRouter = require('./routes/user');
 const driverRouter = require('./routes/driver');
+const chatRouter = require('./routes/chat')
+const messageRouter = require('./routes/Message')
 
 
 const mongoDB = require('./config/db')
@@ -31,6 +33,8 @@ app.use(cookieParser());
 app.use('/', usersRouter);
 app.use('/admin', adminRouter);
 app.use('/driver', driverRouter);
+app.use('/chat',chatRouter)
+app.use('/message',messageRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
