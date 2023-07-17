@@ -1,4 +1,5 @@
 const chatModel = require("../../models/Chat");
+const userModel = require('../../models/user')
 
 
 const CreateChat = async (req, res) => {
@@ -34,9 +35,19 @@ const findChat = async (req, res) => {
     res.status(500).json(error);
   }
 };
-
+const findUser = async(req,res)=>{
+  const {userId}=req.params
+  try {
+    const user = await userModel.findOne({_id:userId})
+    
+    res.status(200).json(user)
+  } catch (error) {
+    res.status(500).json(error)
+  }
+}
 module.exports={
   CreateChat,
   userChats,
-  findChat
+  findChat,
+  findUser
 }
