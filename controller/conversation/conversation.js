@@ -2,6 +2,7 @@ const messageModel = require("../../models/Message");
 
 const addMessage = async (req, res) => {
   const { senderId, chatId, text } = req.body;
+  console.log(senderId, chatId, text,'fffffffffff');
   try {
     const result = await messageModel.create({
       senderId,
