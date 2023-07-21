@@ -32,8 +32,15 @@ const tripSchema = new mongoose.Schema(
       amount: { type: Number, default: 0, required: true },
       aduvance: { type: Number, default: 0, required: true },
       status: { type: Boolean, default: false, required: true },
-      
+
       refund: { type: Boolean, default: false },
+    },
+    pickuptime: {
+      type: String,
+      
+    },
+    dropofftime: {
+      type: String,
     },
   },
 

@@ -407,6 +407,13 @@ const findTrip = async (req, res) => {
 
 const destination = async (req, res) => {
   try {
+    const timestamp = Date.now();
+    const currentDate = new Date(timestamp);
+
+    const hours = currentDate.getHours();
+    const minutes = currentDate.getMinutes();
+
+    const formattedTime = `${hours}:${minutes}`;
     const { tripid, otp } = req.body;
     const confirmOtp = await booking.findOne({ verficationCode: otp });
     if (!confirmOtp) {
@@ -418,6 +425,7 @@ const destination = async (req, res) => {
           $set: {
             StartedToDestination: "confirmed",
             Reachedpickup: "confirmed",
+            pickuptime: formattedTime,
           },
         }
       );
@@ -430,11 +438,19 @@ const destination = async (req, res) => {
 };
 const tripComleted = async (req, res) => {
   try {
+    const timestamp = Date.now();
+    const currentDate = new Date(timestamp);
+
+    const hours = currentDate.getHours();
+    const minutes = currentDate.getMinutes();
+
+    const formattedTime = `${hours}:${minutes}`;
+    
     const { tripid } = req.body;
 
     const finddriver = await booking.findOneAndUpdate(
       { _id: tripid },
-      { $set: { ReachedDestination: "confirmed" } },
+      { $set: { ReachedDestination: "confirmed", dropofftime: formattedTime } },
       { new: true }
     );
     console.log(finddriver, "this is driver");
@@ -458,8 +474,12 @@ const report = async (req, res) => {
     const driverwallet = await wallet
       .findOne({ ownerId: driverid })
       .select("currentBalance");
-      const rejected = await booking.find({driver: driverid,bookingStatus:"rejected" }).count()
-      const cancelled = await booking.find({driver: driverid,bookingStatus:"Cancelled" }).count()
+    const rejected = await booking
+      .find({ driver: driverid, bookingStatus: "rejected" })
+      .count();
+    const cancelled = await booking
+      .find({ driver: driverid, bookingStatus: "Cancelled" })
+      .count();
     const monthlyEarnings = await booking.aggregate([
       {
         $match: {
@@ -544,7 +564,8 @@ const report = async (req, res) => {
       },
     ]);
 
-    const montherning = monthlyReport.length > 0 ? monthlyReport[0].totalEarnings : 0;
+    const montherning =
+      monthlyReport.length > 0 ? monthlyReport[0].totalEarnings : 0;
 
     res.status(200).json({
       totalride,
@@ -555,13 +576,14 @@ const report = async (req, res) => {
       monthname,
       montherning,
       cancelled,
-      rejected
+      rejected,
     });
   } catch (error) {
     console.log(error.message, "this is message");
     res.status(500).json({ message: "something went wrong" });
   }
 };
+
 
 module.exports = {
   signup,
@@ -580,4 +602,5 @@ module.exports = {
   destination,
   tripComleted,
   report,
+  
 };

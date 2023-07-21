@@ -211,7 +211,6 @@ const bookCar = async (req, res) => {
       payment: {
         amount: Rate,
         aduvance: rate,
-        
       },
     });
     let findBooking = await booking
@@ -375,13 +374,40 @@ const payment = async (req, res) => {
         },
       }
     );
-    res.status(200).json({message:"success"})
+    res.status(200).json({ message: "success" });
   } catch (error) {
     res.status(500).json({ message: "somthing went wrong" });
   }
 };
 
+const filtterTable = async (req, res) => {
+  try {
+    const { status } = req.query;
+    if (status === "Cancelled") {
+      const cancelled = await booking.find({ bookingStatus: "Cancelled" });
+      return res.status(200).json(cancelled)
+    }
+    if (status === "Pending") {
+      const Pending = await booking.find({ bookingStatus: "Pending" });
+      return res.status(200).json(Pending)
+    }
+    if (status === "Rejected") {
+      const Rejected = await booking.find({ bookingStatus: "rejected" });
+      return res.status(200).json(Rejected)
+    }
+    if (status === "confirmed") {
+      const confirmed = await booking.find({ bookingStatus: "confirmed" });
+      return res.status(200).json(confirmed)
+    }
+    if (status === "All") {
+      const ALL = await booking.find();
+      return res.status(200).json(ALL)
+    }
 
+  } catch (error) {
+    res.status(500).json(error)
+  }
+};
 
 module.exports = {
   signup,
@@ -396,4 +422,5 @@ module.exports = {
   cancelTrip,
   findTrip,
   payment,
+  filtterTable,
 };

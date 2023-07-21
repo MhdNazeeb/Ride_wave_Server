@@ -13,7 +13,8 @@ const {
   findHistory,
   cancelTrip,
   findTrip,
-  payment
+  payment,
+  filtterTable
 } = require("../controller/user/user");
 
 /* GET home page. */
@@ -28,6 +29,7 @@ router.get("/user", verifyTokenClient, getUser);
 router.get("/history", findHistory);
 router.post("/cancel_ride", cancelTrip);
 router.get("/trip", findTrip);
+router.get("/filtter", filtterTable);
 router.post("/payment", verifyTokenClient,payment);
 
 module.exports = router;
