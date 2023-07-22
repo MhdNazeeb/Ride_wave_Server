@@ -8,6 +8,7 @@ const { token } = require("morgan");
 const jwt_decode = require("jwt-decode");
 const booking = require("../../models/Booking");
 const wallet = require("../../models/Wallet");
+const { log } = require("console");
 const signup = async (req, res) => {
   try {
     const { fname, password, cpassword, email } = req.body;
@@ -384,28 +385,33 @@ const filtterTable = async (req, res) => {
   try {
     const { status } = req.query;
     if (status === "Cancelled") {
-      const cancelled = await booking.find({ bookingStatus: "Cancelled" });
-      return res.status(200).json(cancelled)
+      const cancelled = await booking.find({ bookingStatus: "Cancelled" }).populate("driver");;
+      return res.status(200).json(cancelled);
     }
     if (status === "Pending") {
-      const Pending = await booking.find({ bookingStatus: "Pending" });
-      return res.status(200).json(Pending)
+      const Pending = await booking.find({ bookingStatus: "Pending" }).populate("driver");;
+      return res.status(200).json(Pending);
     }
     if (status === "Rejected") {
-      const Rejected = await booking.find({ bookingStatus: "rejected" });
-      return res.status(200).json(Rejected)
+      const Rejected = await booking.find({ bookingStatus: "rejected" }).populate("driver");;
+      return res.status(200).json(Rejected);
     }
     if (status === "confirmed") {
-      const confirmed = await booking.find({ bookingStatus: "confirmed" });
-      return res.status(200).json(confirmed)
+      const confirmed = await booking.find({ bookingStatus: "confirmed" }).populate("driver");;
+      return res.status(200).json(confirmed);
     }
     if (status === "All") {
-      const ALL = await booking.find();
-      return res.status(200).json(ALL)
+      const ALL = await booking.find().sort({ _id: -1 });
+      return res.status(200).json(ALL);
     }
-
+   
+    const drivers = await booking.find().populate("driver");
+    const searchwise = drivers.filter((item)=>
+      item.driver.name.toLowerCase().indexOf(status.toLowerCase()) !== -1
+    )
+    res.status(200).json(searchwise)
   } catch (error) {
-    res.status(500).json(error)
+    res.status(500).json(error);
   }
 };
 
