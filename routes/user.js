@@ -14,7 +14,8 @@ const {
   cancelTrip,
   findTrip,
   payment,
-  filtterTable
+  filtterTable,
+  walletFinding
 } = require("../controller/user/user");
 
 /* GET home page. */
@@ -31,5 +32,6 @@ router.post("/cancel_ride", cancelTrip);
 router.get("/trip", findTrip);
 router.get("/filtter", filtterTable);
 router.post("/payment", verifyTokenClient,payment);
+router.get("/wallet", verifyTokenClient,walletFinding);
 
 module.exports = router;

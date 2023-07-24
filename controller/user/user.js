@@ -385,31 +385,50 @@ const filtterTable = async (req, res) => {
   try {
     const { status } = req.query;
     if (status === "Cancelled") {
-      const cancelled = await booking.find({ bookingStatus: "Cancelled" }).populate("driver");;
+      const cancelled = await booking
+        .find({ bookingStatus: "Cancelled" })
+        .populate("driver");
       return res.status(200).json(cancelled);
     }
     if (status === "Pending") {
-      const Pending = await booking.find({ bookingStatus: "Pending" }).populate("driver");;
+      const Pending = await booking
+        .find({ bookingStatus: "Pending" })
+        .populate("driver");
       return res.status(200).json(Pending);
     }
     if (status === "Rejected") {
-      const Rejected = await booking.find({ bookingStatus: "rejected" }).populate("driver");;
+      const Rejected = await booking
+        .find({ bookingStatus: "rejected" })
+        .populate("driver");
       return res.status(200).json(Rejected);
     }
     if (status === "confirmed") {
-      const confirmed = await booking.find({ bookingStatus: "confirmed" }).populate("driver");;
+      const confirmed = await booking
+        .find({ bookingStatus: "confirmed" })
+        .populate("driver");
       return res.status(200).json(confirmed);
     }
     if (status === "All") {
       const ALL = await booking.find().sort({ _id: -1 });
       return res.status(200).json(ALL);
     }
-   
+
     const drivers = await booking.find().populate("driver");
-    const searchwise = drivers.filter((item)=>
-      item.driver.name.toLowerCase().indexOf(status.toLowerCase()) !== -1
-    )
-    res.status(200).json(searchwise)
+    const searchwise = drivers.filter(
+      (item) =>
+        item.driver.name.toLowerCase().indexOf(status.toLowerCase()) !== -1
+    );
+    res.status(200).json(searchwise);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
+const walletFinding = async (req, res) => {
+  try {
+    const { userid } = req.query;
+    const findwallet = await wallet.findOne({ ownerId: userid });
+    res.status(200).json(findwallet);
   } catch (error) {
     res.status(500).json(error);
   }
@@ -429,4 +448,5 @@ module.exports = {
   findTrip,
   payment,
   filtterTable,
+  walletFinding,
 };
