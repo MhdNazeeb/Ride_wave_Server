@@ -7,7 +7,7 @@ const nodemailer = require("nodemailer");
 const { token } = require("morgan");
 const jwt_decode = require("jwt-decode");
 const booking = require("../../models/Booking");
-const wallet = require("../../models/Wallet");
+const wallet = require("../../models/wallet");
 const { log } = require("console");
 const signup = async (req, res) => {
   try {
