@@ -4,7 +4,7 @@ const user = require("../../models/user");
 const jwt = require("jsonwebtoken");
 const Car = require("../../models/car");
 const booking = require("../../models/Booking");
-const Wallet = require("../../models/Wallet");
+const Wallet = require("../../models/wallet");
 
 const login = async (req, res) => {
   try {
