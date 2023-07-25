@@ -8,7 +8,7 @@ const app = express();
 const cors = require('cors')
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: 'https://master.d2js3xk7a7outs.amplifyapp.com',
   credentials: true,
   optionSuccessStatus: 200,
 };
