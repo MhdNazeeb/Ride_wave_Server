@@ -419,7 +419,7 @@ const destination = async (req, res) => {
     minutes = minutes < 10 ? '0' + minutes : minutes;
   
     const formattedTime = `${hours}:${minutes} ${ampm}`;
-
+    
     console.log(formattedTime);
     const { tripid, otp } = req.body;
     const confirmOtp = await booking.findOne({ verficationCode: otp });
@@ -455,8 +455,8 @@ const tripComleted = async (req, res) => {
   hours = hours ? hours : 12; 
 
   minutes = minutes < 10 ? '0' + minutes : minutes;
-
   const formattedTime = `${hours}:${minutes} ${ampm}`;
+  console.log(formattedTime,'this formatted time');
     const { tripid } = req.body;
 
     const finddriver = await booking.findOneAndUpdate(
