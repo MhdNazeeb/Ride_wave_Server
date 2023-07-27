@@ -440,12 +440,13 @@ const tripComleted = async (req, res) => {
   try {
     const timestamp = Date.now();
     const currentDate = new Date(timestamp);
-
+    console.log(timestamp, "timeeeeeeeeee");
+    console.log(currentDate, "this data");
     const hours = currentDate.getHours();
     const minutes = currentDate.getMinutes();
-
+     console.log(hours,minutes,'time and minut');
     const formattedTime = `${hours}:${minutes}`;
-    
+       console.log(formattedTime,'this for matted ime');
     const { tripid } = req.body;
 
     const finddriver = await booking.findOneAndUpdate(
@@ -584,7 +585,6 @@ const report = async (req, res) => {
   }
 };
 
-
 module.exports = {
   signup,
   login,
@@ -602,5 +602,4 @@ module.exports = {
   destination,
   tripComleted,
   report,
-  
 };
