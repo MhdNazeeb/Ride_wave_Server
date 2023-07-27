@@ -9,7 +9,7 @@ const wallet = require("../../models/wallet");
 const { ObjectId } = require("mongodb");
 const { query } = require("express");
 const { default: mongoose } = require("mongoose");
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 const signup = async (req, res) => {
   try {
@@ -408,19 +408,8 @@ const findTrip = async (req, res) => {
 
 const destination = async (req, res) => {
   try {
-    // const now = new Date();
-    // let hours = now.getHours();
-    // let minutes = now.getMinutes();
-    // let ampm = hours >= 12 ? "PM" : "AM";
-
-    // hours = hours % 12;
-    // hours = hours ? hours : 12;
-
-    // minutes = minutes < 10 ? "0" + minutes : minutes;
-
-    // const formattedTime = `${hours}:${minutes} ${ampm}`;
-    const formattedTime = moment().format("hh:mm A");
-    console.log(formattedTime, "ghhhhhhhhhhhhhdddddddddddddddddddddd");
+    const now = moment().tz('Asia/Kolkata');
+    const formattedTime = now.format('HH:mm');
     const { tripid, otp } = req.body;
     const confirmOtp = await booking.findOne({ verficationCode: otp });
     if (!confirmOtp) {
@@ -445,20 +434,9 @@ const destination = async (req, res) => {
 };
 const tripComleted = async (req, res) => {
   try {
-    //   const now = new Date();
-    // let hours = now.getHours();
-    // let minutes = now.getMinutes();
-    // let ampm = hours >= 12 ? 'PM' : 'AM';
 
-    // hours = hours % 12;
-    // hours = hours ? hours : 12;
-
-    // minutes = minutes < 10 ? '0' + minutes : minutes;
-    // const formattedTime = `${hours}:${minutes} ${ampm}`;
-    // console.log(formattedTime,'this formatted time');
-
-    const formattedTime = moment().format("hh:mm A");
-    console.log(formattedTime);
+    const now = moment().tz('Asia/Kolkata');
+    const formattedTime = now.format('HH:mm');
     const { tripid } = req.body;
 
     const finddriver = await booking.findOneAndUpdate(
