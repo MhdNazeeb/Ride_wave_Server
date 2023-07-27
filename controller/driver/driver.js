@@ -420,7 +420,7 @@ const destination = async (req, res) => {
   
     const formattedTime = `${hours}:${minutes} ${ampm}`;
     
-    console.log(formattedTime);
+    console.log(formattedTime,'ghhhhhhhhhhhhhdddddddddddddddddddddd');
     const { tripid, otp } = req.body;
     const confirmOtp = await booking.findOne({ verficationCode: otp });
     if (!confirmOtp) {
