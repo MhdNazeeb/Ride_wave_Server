@@ -407,19 +407,18 @@ const findTrip = async (req, res) => {
 
 const destination = async (req, res) => {
   try {
-    // const timestamp = Date.now();
-    // const currentDate = new Date(timestamp);
-
-    // const hours = currentDate.getHours();
-    // const minutes = currentDate.getMinutes();
-
-    // const formattedTime = `${hours}:${minutes}`;
-
-    const currentTime = new Date();
-    const hours = currentTime.getHours();
-    const minutes = currentTime.getMinutes();
-    const seconds = currentTime.getSeconds();
-    const formattedTime = `${hours}:${minutes}:${seconds}`;
+      const now = new Date();
+    let hours = now.getHours();
+    let minutes = now.getMinutes();
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+  
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+  
+   
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+  
+    const formattedTime = `${hours}:${minutes} ${ampm}`;
 
     console.log(formattedTime);
     const { tripid, otp } = req.body;
@@ -446,20 +445,18 @@ const destination = async (req, res) => {
 };
 const tripComleted = async (req, res) => {
   try {
-    // const timestamp = Date.now();
-    // const currentDate = new Date(timestamp);
-    // console.log(timestamp, "timeeeeeeeeee");
-    // console.log(currentDate, "this data");
-    // const hours = currentDate.getHours();
-    // const minutes = currentDate.getMinutes();
-    // console.log(hours, minutes, "time and minut");
-    // const formattedTime = `${hours}:${minutes}`;
-    // console.log(formattedTime, "this for matted ime");
-    const currentTime = new Date();
-    const hours = currentTime.getHours();
-    const minutes = currentTime.getMinutes();
-    const seconds = currentTime.getSeconds();
-    const formattedTime = `${hours}:${minutes}:${seconds}`;
+    
+    const now = new Date();
+  let hours = now.getHours();
+  let minutes = now.getMinutes();
+  let ampm = hours >= 12 ? 'PM' : 'AM';
+
+  hours = hours % 12;
+  hours = hours ? hours : 12; 
+
+  minutes = minutes < 10 ? '0' + minutes : minutes;
+
+  const formattedTime = `${hours}:${minutes} ${ampm}`;
     const { tripid } = req.body;
 
     const finddriver = await booking.findOneAndUpdate(
@@ -616,3 +613,8 @@ module.exports = {
   tripComleted,
   report,
 };
+
+
+ 
+ 
+
